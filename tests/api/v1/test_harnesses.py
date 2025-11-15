@@ -77,7 +77,10 @@ def test_create_harness(client: TestClient, db_session: Session) -> None:
     assert response.status_code == 200
     cutlist = response.json()
     assert len(cutlist["items"]) == 2
+    # Sort by wire_id to ensure deterministic order
+    cutlist["items"].sort(key=lambda x: x["wire_id"])
     assert cutlist["items"][0]["length"] == 100.0
+    assert cutlist["items"][1]["length"] == 120.0
 
     # Test From-To
     response = client.get(f"/api/v1/harnesses/{harness_id}/fromto")
