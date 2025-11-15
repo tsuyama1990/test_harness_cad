@@ -14,6 +14,15 @@
 -   **Swagger UI:** [`/docs`](http://127.0.0.1:8000/docs)
 -   **ReDoc:** [`/redoc`](http://127.0.0.1:8000/redoc)
 
+## ハーネスAPI
+
+このサービスの中核は、ハーネスデータの「単一の信頼できる情報源（Single Source of Truth）」を確立するハーネスAPIです。
+
+-   `POST /api/v1/harnesses/`: 詳細なJSONオブジェクトから新しいハーネス定義を作成します。
+-   `GET /api/v1/harnesses/{harness_id}/bom`: 指定されたハーネスの部品表（BOM）を返します。
+-   `GET /api/v1/harnesses/{harness_id}/cutlist`: ハーネスのワイヤーカットリストを返します。
+-   `GET /api/v1/harnesses/{harness_id}/fromto`: ハーネスの結線リスト（From-Toリスト）を返します。
+
 ## プロジェクト構造
 
 このプロジェクトは、関心事を分離するためにクリーンアーキテクチャに従っています。
