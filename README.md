@@ -1,0 +1,81 @@
+# KiCad Harness Design SaaS - Backend
+
+This repository contains the backend for the KiCad Harness Design SaaS application. It is a FastAPI-based service responsible for programmatically generating KiCad schematic (`.kicad_sch`) files from JSON data and exporting manufacturing outputs like DXF and BOM files using `kicad-cli`.
+
+This initial implementation serves as a technical spike (Cycle 0) to validate the core workflow.
+
+## Project Structure
+
+The project follows a clean architecture to separate concerns:
+
+-   `/app`: Main application code.
+    -   `/api`: FastAPI endpoints and routers.
+    -   `/core`: Configuration management.
+    -   `/db`: Database session and base model definitions.
+    -   `/models`: SQLAlchemy ORM models.
+    -   `/schemas`: Pydantic schemas for data validation.
+    -   `/services`: Core business logic, including the `KiCadEngineService`.
+-   `/tests`: Pytest test suite.
+-   `/alembic`: Alembic database migration scripts.
+
+## Getting Started
+
+### Prerequisites
+
+-   Python 3.10+
+-   KiCad 7.x or later (for `kicad-cli` to be available in the system's PATH).
+-   `uv` (or `pip` and `venv`).
+
+### Installation & Setup
+
+1.  **Clone the repository:**
+
+    ```bash
+    git clone <repository-url>
+    cd kicad-harness-saas
+    ```
+
+2.  **Create a virtual environment and install dependencies:**
+
+    Using `uv`:
+    ```bash
+    uv venv
+    uv pip install -r requirements.txt
+    ```
+
+    Or using `venv` and `pip`:
+    ```bash
+    python3 -m venv .venv
+    source .venv/bin/activate
+    pip install -r requirements.txt
+    ```
+
+3.  **(Optional) Environment Variables:**
+
+    The application uses a `.env` file for configuration. A default `DATABASE_URL` is provided, but you can create a `.env` file to override settings:
+
+    ```
+    DATABASE_URL="sqlite:///./your_database_name.db"
+    ```
+
+### Running the Application
+
+To run the development server:
+
+```bash
+source .venv/bin/activate
+uvicorn app.main:app --reload
+```
+
+The API will be available at `http://127.0.0.1:8000`.
+
+### Running Tests
+
+To run the test suite:
+
+```bash
+source .venv/bin/activate
+pytest
+```
+
+The tests include mocks for `kicad-cli` and `kicad-sch-api` and can be run without a full KiCad installation.
