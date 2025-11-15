@@ -13,13 +13,31 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-def get_kicad_engine_service():
-    """Dependency injector for the KiCadEngineService."""
+def get_kicad_engine_service() -> KiCadEngineService:
+    """Get an instance of the KiCadEngineService.
+
+    This function serves as a dependency injector for the KiCadEngineService,
+    allowing FastAPI to manage the service's lifecycle.
+
+    Returns
+    -------
+    KiCadEngineService
+        An instance of the KiCadEngineService.
+    """
     return KiCadEngineService()
 
 
 def create_spike_test_data() -> DesignData:
-    """Creates a fixed DesignData object for spike testing."""
+    """Create a fixed DesignData object for spike testing.
+
+    This is used as a default input for the API endpoints when no request
+    body is provided, facilitating simple, repeatable tests.
+
+    Returns
+    -------
+    DesignData
+        A pre-populated DesignData object with a simple two-connector harness.
+    """
     return DesignData(
         nodes=[
             Node(
@@ -46,9 +64,31 @@ async def export_spike_test_dxf(
     design_data: Optional[DesignData] = Body(None),
     service: KiCadEngineService = Depends(get_kicad_engine_service),
 ):
-    """
-    Spike test endpoint to generate a DXF file from harness design data.
-    If no data is provided, a fixed test object is used.
+    """Generate and return a DXF file from harness design data.
+
+    This endpoint serves as a spike test to validate the end-to-end workflow
+    of generating a `.kicad_sch` file from JSON data and then exporting it
+    to DXF format using `kicad-cli`. If no request body is provided, it
+    uses a fixed, internal test object.
+
+    Parameters
+    ----------
+    design_data : Optional[DesignData], optional
+        A Pydantic model representing the harness design, received as the
+        request body. Defaults to None, in which case a test object is used.
+    service : KiCadEngineService, optional
+        The KiCad engine service, injected by FastAPI's dependency system.
+
+    Returns
+    -------
+    FileResponse
+        A streaming file response containing the generated DXF file.
+
+    Raises
+    ------
+    HTTPException
+        An exception with status code 500 if any part of the file generation
+        or export process fails.
     """
     sch_file_path = None
     output_file_path = None
@@ -89,9 +129,29 @@ async def export_spike_test_bom(
     design_data: Optional[DesignData] = Body(None),
     service: KiCadEngineService = Depends(get_kicad_engine_service),
 ):
-    """
-    Spike test endpoint to generate a BOM (CSV) file from harness design data.
-    If no data is provided, a fixed test object is used.
+    """Generate and return a BOM (CSV) file from harness design data.
+
+    Similar to the DXF endpoint, this validates the workflow for BOM
+    generation. It takes harness design data, creates a schematic, and then
+    exports a Bill of Materials in CSV format. If no request body is
+    provided, it uses a fixed, internal test object.
+
+    Parameters
+    ----------
+    design_data : Optional[DesignData], optional
+        A Pydantic model representing the harness design. Defaults to None.
+    service : KiCadEngineService, optional
+        The KiCad engine service, injected by FastAPI.
+
+    Returns
+    -------
+    FileResponse
+        A streaming file response containing the generated CSV BOM file.
+
+    Raises
+    ------
+    HTTPException
+        An exception with status code 500 if the process fails.
     """
     sch_file_path = None
     output_file_path = None

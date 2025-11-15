@@ -7,9 +7,17 @@ from app.schemas.harness_design import DesignData, Edge, Node
 
 
 def test_export_spike_test_dxf_endpoint(client: TestClient):
-    """
-    Test the /export/spike_test_dxf endpoint.
-    Mocks the service layer to prevent actual file generation and CLI calls.
+    """Test the /export/spike_test_dxf endpoint.
+
+    This test verifies the behavior of the DXF export endpoint. It uses
+    `unittest.mock.patch` to replace the `KiCadEngineService` with a mock,
+    thereby isolating the endpoint from the actual service logic involving
+    file system operations and subprocess calls.
+
+    Parameters
+    ----------
+    client : TestClient
+        The FastAPI TestClient fixture for making requests to the application.
     """
     # Mock the service methods
     with patch(
@@ -64,9 +72,16 @@ def test_export_spike_test_dxf_endpoint(client: TestClient):
 
 
 def test_export_spike_test_bom_endpoint(client: TestClient):
-    """
-    Test the /export/spike_test_bom endpoint.
-    Mocks the service layer.
+    """Test the /export/spike_test_bom endpoint.
+
+    This test verifies the BOM export endpoint, mocking the `KiCadEngineService`
+    to ensure the test is fast and independent of the service's implementation
+    details.
+
+    Parameters
+    ----------
+    client : TestClient
+        The FastAPI TestClient fixture.
     """
     with patch(
         "app.api.v1.endpoints.harness_exports.KiCadEngineService"
@@ -102,9 +117,17 @@ def test_export_spike_test_bom_endpoint(client: TestClient):
 
 @patch("kicad_sch_api.create_schematic")
 def test_kicad_engine_generate_sch_from_json(mock_create_schematic):
-    """
-    Unit test for the KiCadEngineService.generate_sch_from_json method.
-    Mocks the kicad-sch-api library.
+    """Unit test for the KiCadEngineService.generate_sch_from_json method.
+
+    This test validates the schematic generation logic within the service.
+    It mocks the `kicad-sch-api` library to ensure that the service calls
+    the library's functions with the expected arguments, without creating
+    an actual schematic file.
+
+    Parameters
+    ----------
+    mock_create_schematic : MagicMock
+        A mock of the `kicad_sch_api.create_schematic` function.
     """
     from app.services.kicad_engine_service import KiCadEngineService
 
@@ -147,9 +170,16 @@ def test_kicad_engine_generate_sch_from_json(mock_create_schematic):
 
 @patch("subprocess.run")
 def test_kicad_engine_export_dxf(mock_subprocess_run):
-    """
-    Unit test for the KiCadEngineService.export_dxf method.
-    Mocks subprocess.run.
+    """Unit test for the KiCadEngineService.export_dxf method.
+
+    This test ensures that the `export_dxf` method correctly constructs and
+    executes the `kicad-cli` command via `subprocess.run`. The `subprocess.run`
+    function is mocked to prevent actual execution of external commands.
+
+    Parameters
+    ----------
+    mock_subprocess_run : MagicMock
+        A mock of the `subprocess.run` function.
     """
     from app.services.kicad_engine_service import KiCadEngineService
 

@@ -11,19 +11,31 @@ logger = logging.getLogger(__name__)
 
 
 class KiCadEngineService:
-    """
-    Service to handle KiCad schematic generation and file exports.
+    """Service for KiCad schematic generation and file exports.
+
+    This service encapsulates the core logic for interacting with KiCad-related
+    tools. It uses the `kicad-sch-api` library to programmatically generate
+    schematic files and invokes the `kicad-cli` command-line tool via
+    `subprocess` to export manufacturing files like DXF and BOM.
     """
 
     def generate_sch_from_json(self, design_data: DesignData) -> str:
-        """
-        Generates a .kicad_sch file from JSON design data.
+        """Generate a .kicad_sch file from JSON design data.
 
-        Args:
-            design_data: The Pydantic model containing nodes and edges.
+        Parameters
+        ----------
+        design_data : DesignData
+            The Pydantic model containing nodes and edges that describe the harness.
 
-        Returns:
+        Returns
+        -------
+        str
             The file path of the generated .kicad_sch file.
+
+        Raises
+        ------
+        Exception
+            If the schematic generation fails for any reason.
         """
         logger.info("Generating KiCad schematic from JSON data.")
         try:
@@ -69,7 +81,20 @@ class KiCadEngineService:
             raise
 
     def _run_kicad_cli_command(self, command: list[str]):
-        """Helper to run a kicad-cli command."""
+        """Execute a kicad-cli command using subprocess.
+
+        Parameters
+        ----------
+        command : list[str]
+            A list of strings representing the command and its arguments.
+
+        Raises
+        ------
+        FileNotFoundError
+            If the `kicad-cli` executable is not found in the system's PATH.
+        subprocess.CalledProcessError
+            If the command returns a non-zero exit code, indicating an error.
+        """
         logger.info(f"Running command: {' '.join(command)}")
         try:
             result = subprocess.run(
@@ -90,13 +115,16 @@ class KiCadEngineService:
             raise
 
     def export_dxf(self, sch_file_path: str) -> str:
-        """
-        Exports a DXF file from a .kicad_sch file.
+        """Export a DXF file from a .kicad_sch file.
 
-        Args:
-            sch_file_path: The path to the source .kicad_sch file.
+        Parameters
+        ----------
+        sch_file_path : str
+            The path to the source .kicad_sch file.
 
-        Returns:
+        Returns
+        -------
+        str
             The file path of the generated .dxf file.
         """
         with tempfile.NamedTemporaryFile(suffix=".dxf", delete=False) as tmp_dxf_file:
@@ -116,13 +144,16 @@ class KiCadEngineService:
         return dxf_file_path
 
     def export_bom(self, sch_file_path: str) -> str:
-        """
-        Exports a BOM (CSV) file from a .kicad_sch file.
+        """Export a BOM (CSV) file from a .kicad_sch file.
 
-        Args:
-            sch_file_path: The path to the source .kicad_sch file.
+        Parameters
+        ----------
+        sch_file_path : str
+            The path to the source .kicad_sch file.
 
-        Returns:
+        Returns
+        -------
+        str
             The file path of the generated .csv BOM file.
         """
         with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as tmp_bom_file:
