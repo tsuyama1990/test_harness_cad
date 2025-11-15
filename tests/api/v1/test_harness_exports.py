@@ -1,9 +1,9 @@
 import os
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from fastapi.testclient import TestClient
 
-from app.schemas.harness_design import DesignData, Node, Edge
+from app.schemas.harness_design import DesignData, Edge, Node
 
 
 def test_export_spike_test_dxf_endpoint(client: TestClient):
@@ -47,7 +47,10 @@ def test_export_spike_test_dxf_endpoint(client: TestClient):
         # Assertions
         assert response.status_code == 200
         assert response.headers["content-type"] == "application/dxf"
-        assert 'attachment; filename="harness_design.dxf"' in response.headers["content-disposition"]
+        assert (
+            'attachment; filename="harness_design.dxf"'
+            in response.headers["content-disposition"]
+        )
         assert response.text == "FAKE DXF CONTENT"
 
         # Verify that the service methods were called correctly
@@ -77,13 +80,16 @@ def test_export_spike_test_bom_endpoint(client: TestClient):
         with open("/tmp/fake_bom.csv", "w") as f:
             f.write("Id,Reference,Value")
 
-        response = client.post("/api/v1/harness/export/spike_test_bom", json={
-            "nodes": [], "edges": []
-        })
+        response = client.post(
+            "/api/v1/harness/export/spike_test_bom", json={"nodes": [], "edges": []}
+        )
 
         assert response.status_code == 200
         assert response.headers["content-type"] == "text/csv; charset=utf-8"
-        assert 'attachment; filename="harness_bom.csv"' in response.headers["content-disposition"]
+        assert (
+            'attachment; filename="harness_bom.csv"'
+            in response.headers["content-disposition"]
+        )
         assert response.text == "Id,Reference,Value"
 
         mock_service_instance.generate_sch_from_json.assert_called_once()
@@ -109,10 +115,20 @@ def test_kicad_engine_generate_sch_from_json(mock_create_schematic):
     service = KiCadEngineService()
     design_data = DesignData(
         nodes=[
-            Node(id="J1", type="connector", position={"x": 100, "y": 100}, data={"label": "CONN_1"}),
-            Node(id="J2", type="connector", position={"x": 200, "y": 100}, data={"label": "CONN_2"}),
+            Node(
+                id="J1",
+                type="connector",
+                position={"x": 100, "y": 100},
+                data={"label": "CONN_1"},
+            ),
+            Node(
+                id="J2",
+                type="connector",
+                position={"x": 200, "y": 100},
+                data={"label": "CONN_2"},
+            ),
         ],
-        edges=[Edge(id="E1", source="J1", target="J2")]
+        edges=[Edge(id="E1", source="J1", target="J2")],
     )
 
     # Call the method

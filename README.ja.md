@@ -1,8 +1,18 @@
 # KiCadハーネス設計SaaS - バックエンド
 
+[![CI](https://github.com/<OWNER>/<REPO>/actions/workflows/ci.yml/badge.svg)](https://github.com/<OWNER>/<REPO>/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/<OWNER>/<REPO>/graph/badge.svg?token=<TOKEN>)](https://codecov.io/gh/<OWNER>/<REPO>)
+
 このリポジトリは、KiCadハーネス設計SaaSアプリケーションのバックエンドを含みます。これはFastAPIベースのサービスであり、JSONデータからKiCadの回路図ファイル（`.kicad_sch`）をプログラムで生成し、`kicad-cli`を使用してDXFやBOMファイルなどの製造用ファイルを出力する責任を担います。
 
 この初期実装は、中核となるワークフローを検証するための技術スパイク（サイクル0）として機能します。
+
+## APIドキュメント
+
+アプリケーションの実行後、APIドキュメントはFastAPIによって自動的に生成され、以下のURLで利用可能です。
+
+-   **Swagger UI:** [`/docs`](http://127.0.0.1:8000/docs)
+-   **ReDoc:** [`/redoc`](http://127.0.0.1:8000/redoc)
 
 ## プロジェクト構造
 

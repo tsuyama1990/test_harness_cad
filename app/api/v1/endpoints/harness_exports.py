@@ -1,11 +1,11 @@
-import os
 import logging
+import os
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Body
+from fastapi import APIRouter, Body, Depends, HTTPException
 from fastapi.responses import FileResponse
 
-from app.schemas.harness_design import DesignData, Node, Edge
+from app.schemas.harness_design import DesignData, Edge, Node
 from app.services.kicad_engine_service import KiCadEngineService
 
 logger = logging.getLogger(__name__)
@@ -22,19 +22,29 @@ def create_spike_test_data() -> DesignData:
     """Creates a fixed DesignData object for spike testing."""
     return DesignData(
         nodes=[
-            Node(id="J1", type="connector", position={"x": 100, "y": 100}, data={"label": "CONN_1"}),
-            Node(id="J2", type="connector", position={"x": 200, "y": 100}, data={"label": "CONN_2"}),
+            Node(
+                id="J1",
+                type="connector",
+                position={"x": 100, "y": 100},
+                data={"label": "CONN_1"},
+            ),
+            Node(
+                id="J2",
+                type="connector",
+                position={"x": 200, "y": 100},
+                data={"label": "CONN_2"},
+            ),
         ],
         edges=[
             Edge(id="E1", source="J1", target="J2"),
-        ]
+        ],
     )
 
 
 @router.post("/export/spike_test_dxf", response_class=FileResponse)
 async def export_spike_test_dxf(
     design_data: Optional[DesignData] = Body(None),
-    service: KiCadEngineService = Depends(get_kicad_engine_service)
+    service: KiCadEngineService = Depends(get_kicad_engine_service),
 ):
     """
     Spike test endpoint to generate a DXF file from harness design data.
@@ -57,7 +67,7 @@ async def export_spike_test_dxf(
         return FileResponse(
             path=output_file_path,
             filename="harness_design.dxf",
-            media_type="application/dxf"
+            media_type="application/dxf",
         )
     except Exception as e:
         logger.error(f"DXF export failed: {e}", exc_info=True)
@@ -68,8 +78,8 @@ async def export_spike_test_dxf(
             os.remove(sch_file_path)
             logger.info(f"Cleaned up temporary schematic file: {sch_file_path}")
         if output_file_path and os.path.exists(output_file_path):
-            # The FileResponse will delete the file after sending on modern versions of Starlette
-            # but we'll leave this here as a fallback.
+            # The FileResponse will delete the file after sending on modern
+            # versions of Starlette but we'll leave this here as a fallback.
             # os.remove(output_file_path)
             logger.info(f"Cleaned up temporary DXF file: {output_file_path}")
 
@@ -77,7 +87,7 @@ async def export_spike_test_dxf(
 @router.post("/export/spike_test_bom", response_class=FileResponse)
 async def export_spike_test_bom(
     design_data: Optional[DesignData] = Body(None),
-    service: KiCadEngineService = Depends(get_kicad_engine_service)
+    service: KiCadEngineService = Depends(get_kicad_engine_service),
 ):
     """
     Spike test endpoint to generate a BOM (CSV) file from harness design data.
@@ -98,9 +108,7 @@ async def export_spike_test_bom(
 
         # 3. Return the generated BOM file
         return FileResponse(
-            path=output_file_path,
-            filename="harness_bom.csv",
-            media_type="text/csv"
+            path=output_file_path, filename="harness_bom.csv", media_type="text/csv"
         )
     except Exception as e:
         logger.error(f"BOM export failed: {e}", exc_info=True)
