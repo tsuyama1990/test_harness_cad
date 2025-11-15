@@ -38,10 +38,10 @@ def test_generate_sch_from_json(dummy_design_data):
         # Only connector nodes should result in a call to add component
         assert mock_sch.components.add.call_count == 2
         mock_sch.components.add.assert_any_call(
-            lib="Connector:Conn_01x02", ref="U1", value="Conn", unit=1
+            lib_id="Connector:Conn_01x02", ref="U1", value="Conn", unit=1
         )
         mock_sch.components.add.assert_any_call(
-            lib="Connector:Conn_01x02", ref="U3", value="Conn", unit=1
+            lib_id="Connector:Conn_01x02", ref="U3", value="Conn", unit=1
         )
         mock_sch.save.assert_called_once_with(sch_path)
 

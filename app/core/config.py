@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     """
 
     DATABASE_URL: str = "sqlite:///./app/test.db"
-    KICAD_CLI_PATH: str
+    KICAD_CLI_PATH: str = "/usr/bin/kicad-cli"
     BACKEND_CORS_ORIGINS: list[str] = ["http://localhost:3000"]
 
     model_config = SettingsConfigDict(env_file=".env")

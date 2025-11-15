@@ -3,6 +3,7 @@ from unittest.mock import MagicMock
 from fastapi.testclient import TestClient
 
 from app.api.deps import get_kicad_engine
+from app.main import app
 
 
 def test_full_save_and_export_flow(client: TestClient, mock_kicad_engine: MagicMock):
@@ -11,7 +12,7 @@ def test_full_save_and_export_flow(client: TestClient, mock_kicad_engine: MagicM
     and exporting a DXF.
     """
     # Override the dependency with the mock
-    client.app.dependency_overrides[get_kicad_engine] = lambda: mock_kicad_engine
+    app.dependency_overrides[get_kicad_engine] = lambda: mock_kicad_engine
 
     # 1. Create a project
     project_name = "Test Project"
@@ -41,4 +42,4 @@ def test_full_save_and_export_flow(client: TestClient, mock_kicad_engine: MagicM
     mock_kicad_engine.export_dxf.assert_called_once()
 
     # Clean up the override
-    del client.app.dependency_overrides[get_kicad_engine]
+    del app.dependency_overrides[get_kicad_engine]

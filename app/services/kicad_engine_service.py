@@ -36,7 +36,10 @@ class KiCadEngineService:
             if node.type == "connector":
                 # Using a simple component for demonstration in Cycle 1
                 sch.components.add(
-                    lib="Connector:Conn_01x02", ref=f"U{node.id}", unit=1, value="Conn"
+                    lib_id="Connector:Conn_01x02",
+                    ref=f"U{node.id}",
+                    unit=1,
+                    value="Conn",
                 )
 
         with tempfile.NamedTemporaryFile(
