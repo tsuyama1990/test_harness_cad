@@ -1,4 +1,5 @@
 import os
+
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
@@ -7,7 +8,6 @@ from app.api import deps
 from app.models.harness_design import HarnessDesign
 from app.schemas.harness_design import DesignData
 from app.services.kicad_engine_service import KiCadEngineService
-
 
 router = APIRouter()
 
@@ -40,9 +40,7 @@ def export_dxf(
     )
 
     if not latest_design:
-        raise HTTPException(
-            status_code=404, detail="No design found for this project."
-        )
+        raise HTTPException(status_code=404, detail="No design found for this project.")
 
     try:
         design_data = DesignData.model_validate(latest_design.design_data)

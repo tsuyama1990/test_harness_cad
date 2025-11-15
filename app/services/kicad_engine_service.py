@@ -33,17 +33,17 @@ class KiCadEngineService:
         """
         sch = ksa.Schematic()
         for node in design_data.nodes:
-            if node.type == 'connector':
+            if node.type == "connector":
                 # Using a simple component for demonstration in Cycle 1
                 sch.components.add(
-                    lib="Connector:Conn_01x02",
+                    lib_id="Connector:Conn_01x02",
                     ref=f"U{node.id}",
                     unit=1,
-                    value="Conn"
+                    value="Conn",
                 )
 
         with tempfile.NamedTemporaryFile(
-            delete=False, suffix=".kicad_sch", mode='w'
+            delete=False, suffix=".kicad_sch", mode="w"
         ) as temp_file:
             sch.save(temp_file.name)
             return temp_file.name
@@ -58,14 +58,17 @@ class KiCadEngineService:
         Returns:
             The file path of the generated .dxf file.
         """
-        with tempfile.NamedTemporaryFile(
-            delete=False, suffix=".dxf"
-        ) as temp_dxf_file:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".dxf") as temp_dxf_file:
             temp_dxf_path = temp_dxf_file.name
 
         cmd = [
-            self.cli_path, "sch", "export", "dxf",
-            "--output", temp_dxf_path, sch_file_path
+            self.cli_path,
+            "sch",
+            "export",
+            "dxf",
+            "--output",
+            temp_dxf_path,
+            sch_file_path,
         ]
         subprocess.run(cmd, check=True, capture_output=True)
         return temp_dxf_path
@@ -80,15 +83,17 @@ class KiCadEngineService:
         Returns:
             The file path of the generated BOM file (e.g., .csv).
         """
-        output_dir = Path(tempfile.gettempdir())
-
         # kicad-cli for bom export creates a file with a fixed name in the output dir
         # Let's create a temporary directory to be sure about the output path
         with tempfile.TemporaryDirectory() as temp_dir:
-            temp_bom_path_base = Path(temp_dir) / Path(sch_file_path).stem
             cmd = [
-                self.cli_path, "sch", "export", "bom",
-                "--output-dir", str(temp_dir), sch_file_path
+                self.cli_path,
+                "sch",
+                "export",
+                "bom",
+                "--output-dir",
+                str(temp_dir),
+                sch_file_path,
             ]
             subprocess.run(cmd, check=True, capture_output=True)
 

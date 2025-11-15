@@ -38,10 +38,10 @@ def test_generate_sch_from_json(dummy_design_data):
         # Only connector nodes should result in a call to add component
         assert mock_sch.components.add.call_count == 2
         mock_sch.components.add.assert_any_call(
-            lib="Connector:Conn_01x02", ref="U1", value="Conn", unit=1
+            lib_id="Connector:Conn_01x02", ref="U1", value="Conn", unit=1
         )
         mock_sch.components.add.assert_any_call(
-            lib="Connector:Conn_01x02", ref="U3", value="Conn", unit=1
+            lib_id="Connector:Conn_01x02", ref="U3", value="Conn", unit=1
         )
         mock_sch.save.assert_called_once_with(sch_path)
 
@@ -75,9 +75,13 @@ def test_export_bom():
     """
     Test that export_bom calls subprocess.run with the correct arguments.
     """
-    with patch("app.services.kicad_engine_service.subprocess.run") as mock_subprocess, \
-         patch("app.services.kicad_engine_service.Path.rename"), \
-         patch("app.services.kicad_engine_service.Path.glob", return_value=[MagicMock()]):
+    with (
+        patch("app.services.kicad_engine_service.subprocess.run") as mock_subprocess,
+        patch("app.services.kicad_engine_service.Path.rename"),
+        patch(
+            "app.services.kicad_engine_service.Path.glob", return_value=[MagicMock()]
+        ),
+    ):
         # Arrange
         cli_path = "/usr/bin/kicad-cli"
         service = KiCadEngineService(cli_path=cli_path)

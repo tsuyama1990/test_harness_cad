@@ -4,9 +4,8 @@ from sqlalchemy.orm import Session
 from app.api import deps
 from app.models.harness_design import HarnessDesign
 from app.models.project import Project
-from app.schemas import project as project_schema
 from app.schemas import harness_design as harness_design_schema
-
+from app.schemas import project as project_schema
 
 router = APIRouter()
 
@@ -63,8 +62,7 @@ def save_harness_design(
         raise HTTPException(status_code=404, detail="Project not found")
 
     harness_design = HarnessDesign(
-        project_id=project_id,
-        design_data=design_in.design_data.model_dump()
+        project_id=project_id, design_data=design_in.design_data.model_dump()
     )
     db.add(harness_design)
     db.commit()
