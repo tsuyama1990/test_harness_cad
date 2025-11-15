@@ -1,6 +1,11 @@
+[project]
+name = "kicad-harness-design-saas"
+version = "0.1.0"
+requires-python = ">=3.11"
+
 [tool.ruff]
 line-length = 88
-target-version = "py310"
+target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I"] # flake8 error, pyflakes, isort
@@ -9,7 +14,7 @@ select = ["E", "F", "I"] # flake8 error, pyflakes, isort
 quote-style = "double"
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.11"
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
