@@ -1,4 +1,5 @@
 import os
+import tempfile
 from unittest.mock import MagicMock, patch
 
 from fastapi.testclient import TestClient
@@ -19,56 +20,45 @@ def test_export_spike_test_dxf_endpoint(client: TestClient):
     client : TestClient
         The FastAPI TestClient fixture for making requests to the application.
     """
-    # Mock the service methods
     with patch(
         "app.api.v1.endpoints.harness_exports.KiCadEngineService"
     ) as MockKiCadEngineService:
-        # Create an instance of the mock
-        mock_service_instance = MockKiCadEngineService.return_value
-        mock_service_instance.generate_sch_from_json.return_value = (
-            "/tmp/fake_schematic.kicad_sch"
-        )
-        mock_service_instance.export_dxf.return_value = "/tmp/fake_harness.dxf"
+        with tempfile.NamedTemporaryFile(
+            suffix=".kicad_sch"
+        ) as tmp_sch, tempfile.NamedTemporaryFile(suffix=".dxf", mode="w+") as tmp_dxf:
+            mock_service_instance = MockKiCadEngineService.return_value
+            mock_service_instance.generate_sch_from_json.return_value = tmp_sch.name
+            mock_service_instance.export_dxf.return_value = tmp_dxf.name
 
-        # Create a dummy DXF file for FileResponse to return
-        with open("/tmp/fake_harness.dxf", "w") as f:
-            f.write("FAKE DXF CONTENT")
+            tmp_dxf.write("FAKE DXF CONTENT")
+            tmp_dxf.seek(0)
 
-        # Define some test data
-        test_design_data = {
-            "nodes": [
-                {
-                    "id": "J1",
-                    "type": "connector",
-                    "position": {"x": 100, "y": 100},
-                    "data": {"label": "CONN_1"},
-                }
-            ],
-            "edges": [],
-        }
+            test_design_data = {
+                "nodes": [
+                    {
+                        "id": "J1",
+                        "type": "connector",
+                        "position": {"x": 100, "y": 100},
+                        "data": {"label": "CONN_1"},
+                    }
+                ],
+                "edges": [],
+            }
 
-        # Make the request
-        response = client.post(
-            "/api/v1/harness/export/spike_test_dxf", json=test_design_data
-        )
+            response = client.post(
+                "/api/v1/harness/export/spike_test_dxf", json=test_design_data
+            )
 
-        # Assertions
-        assert response.status_code == 200
-        assert response.headers["content-type"] == "application/dxf"
-        assert (
-            'attachment; filename="harness_design.dxf"'
-            in response.headers["content-disposition"]
-        )
-        assert response.text == "FAKE DXF CONTENT"
+            assert response.status_code == 200
+            assert response.headers["content-type"] == "application/dxf"
+            assert (
+                'attachment; filename="harness_design.dxf"'
+                in response.headers["content-disposition"]
+            )
+            assert response.text == "FAKE DXF CONTENT"
 
-        # Verify that the service methods were called correctly
-        mock_service_instance.generate_sch_from_json.assert_called_once()
-        mock_service_instance.export_dxf.assert_called_once_with(
-            "/tmp/fake_schematic.kicad_sch"
-        )
-
-        # Clean up the dummy file
-        os.remove("/tmp/fake_harness.dxf")
+            mock_service_instance.generate_sch_from_json.assert_called_once()
+            mock_service_instance.export_dxf.assert_called_once_with(tmp_sch.name)
 
 
 def test_export_spike_test_bom_endpoint(client: TestClient):
@@ -86,33 +76,30 @@ def test_export_spike_test_bom_endpoint(client: TestClient):
     with patch(
         "app.api.v1.endpoints.harness_exports.KiCadEngineService"
     ) as MockKiCadEngineService:
-        mock_service_instance = MockKiCadEngineService.return_value
-        mock_service_instance.generate_sch_from_json.return_value = (
-            "/tmp/fake_schematic.kicad_sch"
-        )
-        mock_service_instance.export_bom.return_value = "/tmp/fake_bom.csv"
+        with tempfile.NamedTemporaryFile(
+            suffix=".kicad_sch"
+        ) as tmp_sch, tempfile.NamedTemporaryFile(suffix=".csv", mode="w+") as tmp_bom:
+            mock_service_instance = MockKiCadEngineService.return_value
+            mock_service_instance.generate_sch_from_json.return_value = tmp_sch.name
+            mock_service_instance.export_bom.return_value = tmp_bom.name
 
-        with open("/tmp/fake_bom.csv", "w") as f:
-            f.write("Id,Reference,Value")
+            tmp_bom.write("Id,Reference,Value")
+            tmp_bom.seek(0)
 
-        response = client.post(
-            "/api/v1/harness/export/spike_test_bom", json={"nodes": [], "edges": []}
-        )
+            response = client.post(
+                "/api/v1/harness/export/spike_test_bom", json={"nodes": [], "edges": []}
+            )
 
-        assert response.status_code == 200
-        assert response.headers["content-type"] == "text/csv; charset=utf-8"
-        assert (
-            'attachment; filename="harness_bom.csv"'
-            in response.headers["content-disposition"]
-        )
-        assert response.text == "Id,Reference,Value"
+            assert response.status_code == 200
+            assert response.headers["content-type"] == "text/csv; charset=utf-8"
+            assert (
+                'attachment; filename="harness_bom.csv"'
+                in response.headers["content-disposition"]
+            )
+            assert response.text == "Id,Reference,Value"
 
-        mock_service_instance.generate_sch_from_json.assert_called_once()
-        mock_service_instance.export_bom.assert_called_once_with(
-            "/tmp/fake_schematic.kicad_sch"
-        )
-
-        os.remove("/tmp/fake_bom.csv")
+            mock_service_instance.generate_sch_from_json.assert_called_once()
+            mock_service_instance.export_bom.assert_called_once_with(tmp_sch.name)
 
 
 @patch("kicad_sch_api.create_schematic")
@@ -189,8 +176,9 @@ def test_kicad_engine_export_dxf(mock_subprocess_run):
     )
 
     service = KiCadEngineService()
-    fake_sch_path = "/tmp/test.kicad_sch"
-    dxf_file_path = service.export_dxf(fake_sch_path)
+    with tempfile.NamedTemporaryFile(suffix=".kicad_sch") as tmp_sch:
+        fake_sch_path = tmp_sch.name
+        dxf_file_path = service.export_dxf(fake_sch_path)
 
     # Assertions
     assert dxf_file_path.endswith(".dxf")

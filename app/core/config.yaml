@@ -1,0 +1,14 @@
+# Application-specific static configuration
+
+kicad:
+  cli_command: "kicad-cli"
+  # Default KiCad library identifiers for the spike test
+  default_connector:
+    lib_id: "Connector:Conn_01x02"
+    footprint: "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
+
+api:
+  # Default filenames for exported files
+  default_filenames:
+    dxf: "harness_design.dxf"
+    bom: "harness_bom.csv"

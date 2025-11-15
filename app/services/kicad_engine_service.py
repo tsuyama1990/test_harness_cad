@@ -5,6 +5,7 @@ from typing import Dict
 
 import kicad_sch_api as ksa
 
+from app.core.config import settings
 from app.schemas.harness_design import DesignData
 
 logger = logging.getLogger(__name__)
@@ -50,13 +51,14 @@ class KiCadEngineService:
             # Add components for each node
             for node in design_data.nodes:
                 if node.type == "connector":
-                    # For this spike, add a fixed connector symbol
+                    # For this spike, add a fixed connector symbol from config
+                    connector_cfg = settings.kicad.default_connector
                     sch.components.add(
-                        lib_id="Connector:Conn_01x02",
+                        lib_id=connector_cfg["lib_id"],
                         reference=node.id,
                         value=node.data.get("label", "J?"),
                         position=node_positions[node.id],
-                        footprint="Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical",
+                        footprint=connector_cfg["footprint"],
                     )
                 # Add other component types here in the future
 
@@ -105,7 +107,7 @@ class KiCadEngineService:
                 logger.warning(f"Command produced STDERR: {result.stderr}")
         except FileNotFoundError:
             logger.error(
-                "`kicad-cli` not found. Is KiCad installed and in the system's PATH?"
+                f"`{settings.kicad.cli_command}` not found. Is KiCad installed and in the system's PATH?"
             )
             raise
         except subprocess.CalledProcessError as e:
@@ -131,7 +133,7 @@ class KiCadEngineService:
             dxf_file_path = tmp_dxf_file.name
 
         command = [
-            "kicad-cli",
+            settings.kicad.cli_command,
             "sch",
             "export",
             "dxf",
@@ -160,7 +162,7 @@ class KiCadEngineService:
             bom_file_path = tmp_bom_file.name
 
         command = [
-            "kicad-cli",
+            settings.kicad.cli_command,
             "sch",
             "export",
             "bom",

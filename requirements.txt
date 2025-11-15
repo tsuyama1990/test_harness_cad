@@ -7,3 +7,4 @@ kicad-sch-api
 pytest
 httpx
 python-dotenv
+PyYAML

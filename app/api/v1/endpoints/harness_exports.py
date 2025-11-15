@@ -5,6 +5,7 @@ from typing import Optional
 from fastapi import APIRouter, Body, Depends, HTTPException
 from fastapi.responses import FileResponse
 
+from app.core.config import settings
 from app.schemas.harness_design import DesignData, Edge, Node
 from app.services.kicad_engine_service import KiCadEngineService
 
@@ -106,7 +107,7 @@ async def export_spike_test_dxf(
         # 3. Return the generated DXF file
         return FileResponse(
             path=output_file_path,
-            filename="harness_design.dxf",
+            filename=settings.api.default_filenames["dxf"],
             media_type="application/dxf",
         )
     except Exception as e:
@@ -168,7 +169,9 @@ async def export_spike_test_bom(
 
         # 3. Return the generated BOM file
         return FileResponse(
-            path=output_file_path, filename="harness_bom.csv", media_type="text/csv"
+            path=output_file_path,
+            filename=settings.api.default_filenames["bom"],
+            media_type="text/csv",
         )
     except Exception as e:
         logger.error(f"BOM export failed: {e}", exc_info=True)
