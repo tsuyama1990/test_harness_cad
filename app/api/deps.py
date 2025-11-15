@@ -1,11 +1,25 @@
-# In the future, this file will contain dependencies for the API,
-# such as a database session dependency.
+from collections.abc import Generator
 
-# from app.db.session import SessionLocal
+from app.core.config import settings
+from app.db.session import SessionLocal
+from app.services.kicad_engine_service import KiCadEngineService
 
-# def get_db():
-#     db = SessionLocal()
-#     try:
-#         yield db
-#     finally:
-#         db.close()
+
+def get_db() -> Generator:
+    """
+    Dependency function that yields a new SQLAlchemy database session.
+    """
+    db = None
+    try:
+        db = SessionLocal()
+        yield db
+    finally:
+        if db:
+            db.close()
+
+
+def get_kicad_engine() -> KiCadEngineService:
+    """
+    Dependency function that returns an instance of the KiCadEngineService.
+    """
+    return KiCadEngineService(cli_path=settings.KICAD_CLI_PATH)

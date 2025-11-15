@@ -1,4 +1,6 @@
-from sqlalchemy import JSON, Column, ForeignKey, Integer
+from datetime import datetime
+
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, JSON
 from sqlalchemy.orm import relationship
 
 from app.db.base import Base
@@ -9,7 +11,7 @@ class HarnessDesign(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     project_id = Column(Integer, ForeignKey("projects.id"))
-    version = Column(Integer, nullable=False, default=1)
-    design_data = Column(JSON, nullable=False)
+    design_data = Column(JSON)
+    created_at = Column(DateTime, default=datetime.utcnow)
 
     project = relationship("Project", back_populates="harness_designs")
