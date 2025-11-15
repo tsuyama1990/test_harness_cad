@@ -1,10 +1,7 @@
 fastapi
-uvicorn[standard]
+uvicorn
 sqlalchemy
 alembic
-pydantic
+pydantic-settings
 kicad-sch-api
 pytest
-httpx
-python-dotenv
-PyYAML
