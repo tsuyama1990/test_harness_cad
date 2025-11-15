@@ -62,8 +62,7 @@ def save_harness_design(
         raise HTTPException(status_code=404, detail="Project not found")
 
     harness_design = HarnessDesign(
-        project_id=project_id,
-        design_data=design_in.design_data.model_dump()
+        project_id=project_id, design_data=design_in.design_data.model_dump()
     )
     db.add(harness_design)
     db.commit()

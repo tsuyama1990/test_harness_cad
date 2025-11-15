@@ -28,9 +28,7 @@ def test_full_save_and_export_flow(client: TestClient, mock_kicad_engine: MagicM
             "edges": [],
         }
     }
-    response = client.post(
-        f"/api/v1/projects/{project_id}/save", json=design_data
-    )
+    response = client.post(f"/api/v1/projects/{project_id}/save", json=design_data)
     assert response.status_code == 200
 
     # 3. Export DXF
