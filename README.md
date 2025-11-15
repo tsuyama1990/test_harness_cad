@@ -5,12 +5,7 @@
 
 This repository contains the backend for the KiCad Harness Design SaaS application. It is a FastAPI-based service responsible for programmatically generating KiCad schematic (`.kicad_sch`) files from JSON data and exporting manufacturing outputs like DXF and BOM files using `kicad-cli`.
 
-This SaaS application provides two main sets of API endpoints:
-
-1.  **Harness Design & Export API:** Endpoints for creating harness design projects and exporting manufacturing files (`/api/v1/projects`).
-2.  **KiCad HTTP Library API:** Endpoints that are compatible with KiCad 8/9's "HTTP Library" feature, allowing KiCad users to access a centrally managed component library (`/api/v1/kicad_library`).
-
-This README primarily focuses on the initial setup. For detailed API usage, please refer to the auto-generated documentation.
+This initial implementation serves as a technical spike (Cycle 0) to validate the core workflow.
 
 ## API Documentation
 
