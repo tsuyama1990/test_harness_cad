@@ -1,0 +1,100 @@
+from uuid import UUID
+
+from pydantic import BaseModel, Field
+
+# --- Component Schemas for Creation ---
+
+
+class PinCreate(BaseModel):
+    id: str = Field(
+        ..., description="Pin identifier within the connector, e.g., '1' or 'A1'"
+    )
+
+
+class ConnectorCreate(BaseModel):
+    id: str = Field(
+        ...,
+        description="User-defined logical identifier for the connector, e.g., 'CONN1'",
+    )
+    manufacturer: str
+    part_number: str
+    pins: list[PinCreate]
+
+
+class WireCreate(BaseModel):
+    id: str = Field(
+        ..., description="User-defined logical identifier for the wire, e.g., 'W-001'"
+    )
+    manufacturer: str
+    part_number: str
+    color: str
+    gauge: float
+    length: float = Field(..., description="Length of the wire in millimeters")
+
+
+class ConnectionCreate(BaseModel):
+    wire_id: str = Field(
+        ..., description="Logical ID of the wire used for the connection"
+    )
+    from_connector_id: str = Field(
+        ..., description="Logical ID of the source connector"
+    )
+    from_pin_id: str = Field(..., description="Identifier of the source pin")
+    to_connector_id: str = Field(
+        ..., description="Logical ID of the destination connector"
+    )
+    to_pin_id: str = Field(..., description="Identifier of the destination pin")
+
+
+# --- Harness Schemas ---
+
+
+class HarnessCreate(BaseModel):
+    name: str
+    connectors: list[ConnectorCreate]
+    wires: list[WireCreate]
+    connections: list[ConnectionCreate]
+
+
+class Harness(BaseModel):
+    id: UUID
+    name: str
+
+    class Config:
+        from_attributes = True
+
+
+# --- API Response Schemas ---
+
+
+class BomItem(BaseModel):
+    part_number: str
+    manufacturer: str
+    quantity: int
+
+
+class BomResponse(BaseModel):
+    connectors: list[BomItem]
+    wires: list[BomItem]
+    # Terminals can be added later if needed.
+
+
+class CutlistItem(BaseModel):
+    wire_id: str
+    part_number: str
+    color: str
+    length: float
+
+
+class CutlistResponse(BaseModel):
+    items: list[CutlistItem]
+
+
+class FromToItem(BaseModel):
+    wire_id: str
+    from_location: str = Field(..., description="e.g., 'CONN1-1'")
+    to_location: str = Field(..., description="e.g., 'CONN2-3'")
+
+
+class FromToResponse(BaseModel):
+    items: list[FromToItem]
