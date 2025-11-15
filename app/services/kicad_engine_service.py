@@ -80,14 +80,14 @@ class KiCadEngineService:
         Returns:
             The file path of the generated BOM file (e.g., .csv).
         """
-        output_dir = Path(tempfile.gettempdir())
-
         # kicad-cli for bom export creates a file with a fixed name in the output dir
         # Let's create a temporary directory to be sure about the output path
         with tempfile.TemporaryDirectory() as temp_dir:
-            temp_bom_path_base = Path(temp_dir) / Path(sch_file_path).stem
             cmd = [
-                self.cli_path, "sch", "export", "bom",
+                self.cli_path,
+                "sch",
+                "export",
+                "bom",
                 "--output-dir", str(temp_dir), sch_file_path
             ]
             subprocess.run(cmd, check=True, capture_output=True)

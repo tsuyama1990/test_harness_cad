@@ -4,9 +4,8 @@ from sqlalchemy.orm import Session
 from app.api import deps
 from app.models.harness_design import HarnessDesign
 from app.models.project import Project
-from app.schemas import project as project_schema
 from app.schemas import harness_design as harness_design_schema
-
+from app.schemas import project as project_schema
 
 router = APIRouter()
 

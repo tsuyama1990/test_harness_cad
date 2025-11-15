@@ -75,9 +75,13 @@ def test_export_bom():
     """
     Test that export_bom calls subprocess.run with the correct arguments.
     """
-    with patch("app.services.kicad_engine_service.subprocess.run") as mock_subprocess, \
-         patch("app.services.kicad_engine_service.Path.rename"), \
-         patch("app.services.kicad_engine_service.Path.glob", return_value=[MagicMock()]):
+    with patch(
+        "app.services.kicad_engine_service.subprocess.run"
+    ) as mock_subprocess, patch(
+        "app.services.kicad_engine_service.Path.rename"
+    ), patch(
+        "app.services.kicad_engine_service.Path.glob", return_value=[MagicMock()]
+    ):
         # Arrange
         cli_path = "/usr/bin/kicad-cli"
         service = KiCadEngineService(cli_path=cli_path)

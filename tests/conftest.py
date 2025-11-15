@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from app.api.deps import get_db, get_kicad_engine
+from app.api.deps import get_db
 from app.db.base import Base
 from app.main import app
 from app.services.kicad_engine_service import KiCadEngineService
