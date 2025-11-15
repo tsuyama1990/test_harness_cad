@@ -6,9 +6,8 @@ from unittest.mock import MagicMock
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import sessionmaker
 
-import app.models  # Ensure all models are loaded for metadata
 from app.api.deps import get_db
 from app.db.base import Base
 from app.main import app
@@ -34,13 +33,18 @@ def db_session() -> Generator:
 
 
 @pytest.fixture(scope="function")
-def client(db_session: Session) -> Generator:
+def client(db_session: Generator) -> Generator:
     def override_get_db():
-        yield db_session
+        try:
+            yield db_session
+        finally:
+            db_session.close()
 
     app.dependency_overrides[get_db] = override_get_db
-    yield TestClient(app)
-    app.dependency_overrides.clear()
+    with TestClient(app) as c:
+        yield c
+    # Clear overrides after test
+    app.dependency_overrides = {}
 
 
 @pytest.fixture
