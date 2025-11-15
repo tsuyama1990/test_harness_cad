@@ -1,3 +1,4 @@
+import os
 import tempfile
 from collections.abc import Generator
 from unittest.mock import MagicMock
@@ -49,11 +50,18 @@ def client(db_session: Generator) -> Generator:
 @pytest.fixture
 def mock_kicad_engine() -> Generator[MagicMock, None, None]:
     """Fixture to mock the KiCadEngineService and handle temporary files."""
-    with (
-        tempfile.NamedTemporaryFile(delete=True, suffix=".kicad_sch") as sch_file,
-        tempfile.NamedTemporaryFile(delete=True, suffix=".dxf") as dxf_file,
-    ):
-        mock_engine = MagicMock(spec=KiCadEngineService)
-        mock_engine.generate_sch_from_json.return_value = sch_file.name
-        mock_engine.export_dxf.return_value = dxf_file.name
-        yield mock_engine
+    sch_file = tempfile.NamedTemporaryFile(delete=False, suffix=".kicad_sch")
+    dxf_file = tempfile.NamedTemporaryFile(delete=False, suffix=".dxf")
+
+    mock_engine = MagicMock(spec=KiCadEngineService)
+    mock_engine.generate_sch_from_json.return_value = sch_file.name
+    mock_engine.export_dxf.return_value = dxf_file.name
+
+    yield mock_engine
+
+    # Cleanup: a robust way to remove files that might already be deleted
+    for f in [sch_file, dxf_file]:
+        try:
+            os.remove(f.name)
+        except FileNotFoundError:
+            pass
