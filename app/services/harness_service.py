@@ -146,12 +146,12 @@ class HarnessService:
     def get_harness(self, db: Session, harness_id: UUID) -> models.Harness:
         db_harness = (
             db.query(models.Harness)
+            .filter(models.Harness.id == harness_id)
             .options(
                 joinedload(models.Harness.connectors).joinedload(models.Connector.pins),
                 joinedload(models.Harness.wires),
-                joinedload(models.Harness.connections).joinedload(
-                    models.Connection.wire
-                ),
+                joinedload(models.Harness.connections)
+                .joinedload(models.Connection.wire),
                 joinedload(models.Harness.connections)
                 .joinedload(models.Connection.from_pin)
                 .joinedload(models.Pin.connector),
@@ -159,7 +159,6 @@ class HarnessService:
                 .joinedload(models.Connection.to_pin)
                 .joinedload(models.Pin.connector),
             )
-            .filter(models.Harness.id == harness_id)
             .first()
         )
 
