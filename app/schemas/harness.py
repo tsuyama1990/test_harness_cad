@@ -64,6 +64,13 @@ class Harness(BaseModel):
         from_attributes = True
 
 
+class HarnessFull(HarnessCreate):
+    id: UUID
+
+    class Config:
+        from_attributes = True
+
+
 # --- API Response Schemas ---
 
 
