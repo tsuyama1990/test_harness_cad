@@ -1,15 +1,15 @@
 
-import sys
 import os
+import sys
 
 # Add the project root to the Python path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 
-import sqlite3
 import json
+import sqlite3
 
 db_path = 'app/test.db'
-print(f"--- Starting DB Debug Script ---")
+print("--- Starting DB Debug Script ---")
 print(f"Current working directory: {os.getcwd()}")
 print(f"Checking for database file at: {os.path.abspath(db_path)}")
 
