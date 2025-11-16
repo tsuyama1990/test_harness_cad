@@ -11,6 +11,7 @@ import CustomConnectorNode from './CustomConnectorNode';
 import CustomWireEdge from './CustomWireEdge';
 import { useHarnessData } from '../hooks/useHarnessData';
 import { useReactFlowDnD } from '../hooks/useReactFlowDnD';
+import { useHarnessSync } from '../hooks/useHarnessSync';
 
 const nodeTypes = { customConnector: CustomConnectorNode };
 const edgeTypes = { customWire: CustomWireEdge };
@@ -24,6 +25,7 @@ const FlowCanvas: React.FC<HarnessVisualizerProps> = ({ harnessId }) => {
     useHarnessStore();
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   useHarnessData(harnessId);
+  useHarnessSync();
   const { onDragOver, onDrop } = useReactFlowDnD();
 
   return (
