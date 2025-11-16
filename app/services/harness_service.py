@@ -72,6 +72,78 @@ class HarnessService:
         db.refresh(db_harness)
         return db_harness
 
+    def update_harness(
+        self, db: Session, harness_id: UUID, harness_in: schemas.HarnessCreate
+    ) -> models.Harness:
+        db_harness = self.get_harness(db=db, harness_id=harness_id)
+
+        # Clear existing data
+        for connection in db_harness.connections:
+            db.delete(connection)
+        for wire in db_harness.wires:
+            db.delete(wire)
+        for connector in db_harness.connectors:
+            db.delete(connector)  # Pins will be cascade-deleted
+        db.flush()
+
+        # Update harness name
+        db_harness.name = harness_in.name
+
+        # Re-create components from the input schema
+        connector_map = {}
+        pin_map = {}
+        for conn_in in harness_in.connectors:
+            db_conn = models.Connector(
+                logical_id=conn_in.id,
+                manufacturer=conn_in.manufacturer,
+                part_number=conn_in.part_number,
+                harness_id=db_harness.id,
+            )
+            db.add(db_conn)
+            db.flush()
+            connector_map[conn_in.id] = db_conn
+            for pin_in in conn_in.pins:
+                db_pin = models.Pin(logical_id=pin_in.id, connector_id=db_conn.id)
+                db.add(db_pin)
+                db.flush()
+                pin_map[f"{conn_in.id}-{pin_in.id}"] = db_pin
+
+        wire_map = {}
+        for wire_in in harness_in.wires:
+            db_wire = models.Wire(
+                logical_id=wire_in.id,
+                manufacturer=wire_in.manufacturer,
+                part_number=wire_in.part_number,
+                color=wire_in.color,
+                gauge=wire_in.gauge,
+                length=wire_in.length,
+                harness_id=db_harness.id,
+            )
+            db.add(db_wire)
+            db.flush()
+            wire_map[wire_in.id] = db_wire
+
+        for conn_data in harness_in.connections:
+            from_pin_key = f"{conn_data.from_connector_id}-{conn_data.from_pin_id}"
+            to_pin_key = f"{conn_data.to_connector_id}-{conn_data.to_pin_id}"
+
+            if from_pin_key not in pin_map or to_pin_key not in pin_map:
+                raise InvalidHarnessDataException("Pin not found for connection.")
+            if conn_data.wire_id not in wire_map:
+                raise InvalidHarnessDataException("Wire not found for connection.")
+
+            db_connection = models.Connection(
+                harness_id=db_harness.id,
+                wire_id=wire_map[conn_data.wire_id].id,
+                from_pin_id=pin_map[from_pin_key].id,
+                to_pin_id=pin_map[to_pin_key].id,
+            )
+            db.add(db_connection)
+
+        db.commit()
+        db.refresh(db_harness)
+        return db_harness
+
     def get_harness(self, db: Session, harness_id: UUID) -> models.Harness:
         db_harness = (
             db.query(models.Harness)

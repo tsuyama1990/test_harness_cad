@@ -19,9 +19,11 @@
 このサービスの中核は、ハーネスデータの「単一の信頼できる情報源（Single Source of Truth）」を確立するハーネスAPIです。
 
 -   `POST /api/v1/harnesses/`: 詳細なJSONオブジェクトから新しいハーネス定義を作成します。
+-   `PUT /api/v1/harnesses/{harness_id}`: 既存のハーネス定義を提供されたJSONオブジェクトで上書き更新します。
 -   `GET /api/v1/harnesses/{harness_id}/bom`: 指定されたハーネスの部品表（BOM）を返します。
 -   `GET /api/v1/harnesses/{harness_id}/cutlist`: ハーネスのワイヤーカットリストを返します。
 -   `GET /api/v1/harnesses/{harness_id}/fromto`: ハーネスの結線リスト（From-Toリスト）を返します。
+-   `GET /api/v1/components`: フロントエンドのコンポーネントライブラリ用に、利用可能なコンポーネント（コネクタ、電線）のリストを返します。
 
 ## プロジェクト構造
 
@@ -34,8 +36,34 @@
     -   `/models`: SQLAlchemyのORMモデル
     -   `/schemas`: データバリデーション用のPydanticスキーマ
     -   `/services`: `KiCadEngineService`を含むコアビジネスロジック
--   `/tests`: Pytestのテストスイート
+-   `/tests`: バックエンド用のPytestテストスイート
 -   `/alembic`: Alembicのデータベースマイグレーションスクリプト
+-   `/frontend`: インタラクティブなハーネスエディタのためのReactベースのフロントエンドアプリケーション
+
+## フロントエンドアプリケーション
+
+このプロジェクトには、`/frontend`ディレクトリに配置された、React、TypeScript、Viteで構築されたフロントエンドアプリケーションが含まれています。これにより、ハーネス設計を作成・修正するためのインタラクティブなWebベースのエディタが提供されます。
+
+### フロントエンドの実行方法
+
+フロントエンドの開発サーバーを実行するには：
+
+1.  **フロントエンドディレクトリに移動します:**
+    ```bash
+    cd frontend
+    ```
+
+2.  **依存関係をインストールします:**
+    ```bash
+    npm install
+    ```
+
+3.  **Vite開発サーバーを起動します:**
+    ```bash
+    npm run dev
+    ```
+
+フロントエンドアプリケーションは`http://localhost:5173`（または次に利用可能なポート）で利用可能になります。APIリクエストは、`http://127.0.0.1:8000`で実行されているバックエンドサーバーにプロキシされるように設定されています。
 
 ## セットアップ方法
 

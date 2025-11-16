@@ -44,6 +44,25 @@ def get_harness(
     return harness
 
 
+@router.put("/{harness_id}", response_model=schemas.Harness)
+def update_harness(
+    *,
+    db: Session = Depends(deps.get_db),
+    harness_id: UUID,
+    harness_in: schemas.HarnessCreate,
+):
+    """
+    Update a harness.
+    """
+    try:
+        harness = harness_service.update_harness(
+            db=db, harness_id=harness_id, harness_in=harness_in
+        )
+    except (HarnessNotFoundException, InvalidHarnessDataException) as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    return harness
+
+
 @router.get("/{harness_id}/bom", response_model=schemas.BomResponse)
 def get_bom(
     *,

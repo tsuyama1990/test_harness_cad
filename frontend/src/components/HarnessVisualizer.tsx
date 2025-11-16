@@ -1,130 +1,112 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useCallback, useRef } from 'react';
 import ReactFlow, {
   Controls,
   Background,
-  Node,
-  Edge,
-  useNodesState,
-  useEdgesState,
+  MiniMap,
   useReactFlow,
-  ReactFlowProvider,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import dagre from 'dagre';
+import useHarnessStore from '../stores/useHarnessStore';
 import { getHarness } from '../services/api';
 import { transformHarnessToFlow } from '../utils/dataTransformer';
+import CustomConnectorNode from './CustomConnectorNode';
+import CustomWireEdge from './CustomWireEdge';
+
+const nodeTypes = { customConnector: CustomConnectorNode };
+const edgeTypes = { customWire: CustomWireEdge };
 
 interface HarnessVisualizerProps {
   harnessId: string;
 }
 
-const dagreGraph = new dagre.graphlib.Graph();
-dagreGraph.setDefaultEdgeLabel(() => ({}));
-
-const nodeWidth = 172;
-const nodeHeight = 36;
-
-const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
-  dagreGraph.setGraph({ rankdir: 'LR' });
-
-  nodes.forEach((node) => {
-    dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
-  });
-
-  edges.forEach((edge) => {
-    dagreGraph.setEdge(edge.source, edge.target);
-  });
-
-  dagre.layout(dagreGraph);
-
-  nodes.forEach((node) => {
-    const nodeWithPosition = dagreGraph.node(node.id);
-    node.targetPosition = 'left';
-    node.sourcePosition = 'right';
-
-    // We are shifting the dagre node position (anchor=center center) to the top left
-    // so it matches the React Flow node anchor point (top left).
-    node.position = {
-      x: nodeWithPosition.x - nodeWidth / 2,
-      y: nodeWithPosition.y - nodeHeight / 2,
-    };
-
-    return node;
-  });
-
-  return { nodes, edges };
-};
-
 const HarnessVisualizer: React.FC<HarnessVisualizerProps> = ({ harnessId }) => {
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const { fitView } = useReactFlow();
+  const {
+    nodes,
+    edges,
+    setInitialData,
+    onNodesChange,
+    onEdgesChange,
+    onConnect,
+    setHarnessId,
+    setNodes, // Keep for onDrop
+  } = useHarnessStore();
+  const reactFlowWrapper = useRef<HTMLDivElement>(null);
+  const { screenToFlowPosition } = useReactFlow();
 
   useEffect(() => {
-    const fetchAndLayoutData = async () => {
+    setHarnessId(harnessId);
+    const fetchHarnessData = async () => {
       try {
         const harnessData = await getHarness(harnessId);
-        const { nodes: transformedNodes, edges: transformedEdges } = transformHarnessToFlow(harnessData);
-        const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
-          transformedNodes,
-          transformedEdges
-        );
-        setNodes(layoutedNodes);
-        setEdges(layoutedEdges);
+        const { nodes: transformedNodes, edges: transformedEdges } =
+          transformHarnessToFlow(harnessData);
+        setInitialData(transformedNodes, transformedEdges);
       } catch (error) {
         console.error('Failed to fetch harness data:', error);
       }
     };
+    fetchHarnessData();
+  }, [harnessId, setHarnessId, setInitialData]);
 
-    if (harnessId) {
-      fetchAndLayoutData();
-    }
-  }, [harnessId, setNodes, setEdges]);
+  const onDragOver = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+  }, []);
 
-  const onLayout = useCallback(() => {
-    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
-      nodes,
-      edges
-    );
-    setNodes([...layoutedNodes]);
-    setEdges([...layoutedEdges]);
-    fitView({ duration: 800, padding: 0.1 });
-  }, [nodes, edges, setNodes, setEdges, fitView]);
+  const onDrop = useCallback(
+    (event: React.DragEvent) => {
+      event.preventDefault();
 
+      const reactFlowBounds = reactFlowWrapper.current?.getBoundingClientRect();
+      const type = event.dataTransfer.getData('application/reactflow-type');
+      const data = JSON.parse(event.dataTransfer.getData('application/reactflow-data'));
 
-  useEffect(() => {
-    if (nodes.length > 0) {
-      fitView({ duration: 800, padding: 0.1 });
-    }
-  }, [nodes, fitView]);
+      // check if the dropped element is valid
+      if (typeof type === 'undefined' || !type) {
+        return;
+      }
 
+      const position = screenToFlowPosition({
+        x: event.clientX - (reactFlowBounds?.left ?? 0),
+        y: event.clientY - (reactFlowBounds?.top ?? 0),
+      });
+
+      const newNode = {
+        id: `${data.name}-${+new Date()}`,
+        type: 'customConnector',
+        position,
+        data: {
+          label: data.name,
+          part_number: data.part_number,
+          pins: data.pins,
+        },
+      };
+
+      setNodes([...nodes, newNode]);
+    },
+    [screenToFlowPosition, nodes, setNodes]
+  );
 
   return (
-    <div style={{ height: '100vh', width: '100%' }}>
+    <div style={{ width: '100%', height: '100%' }} ref={reactFlowWrapper}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        onDragOver={onDragOver}
+        onDrop={onDrop}
         fitView
       >
         <Controls />
         <Background />
+        <MiniMap />
       </ReactFlow>
-      <button onClick={onLayout} style={{ position: 'absolute', right: 10, top: 10, zIndex: 4 }}>
-        Layout
-      </button>
     </div>
   );
 };
 
-
-const HarnessVisualizerWrapper: React.FC<HarnessVisualizerProps> = (props) => {
-  return (
-    <ReactFlowProvider>
-      <HarnessVisualizer {...props} />
-    </ReactFlowProvider>
-  );
-};
-
-export default HarnessVisualizerWrapper;
+export default HarnessVisualizer;
