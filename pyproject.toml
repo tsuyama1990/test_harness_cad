@@ -65,3 +65,8 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 addopts = "--cov=app --cov-report=html --cov-report=term-missing"
 
+[dependency-groups]
+dev = [
+    "ruff>=0.14.5",
+]
+
