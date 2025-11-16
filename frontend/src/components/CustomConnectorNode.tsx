@@ -1,6 +1,5 @@
 import React from 'react';
-import { Handle } from 'reactflow';
-import type { Position } from 'reactflow';
+import { Handle, Position } from 'reactflow';
 
 interface Pin {
   id: string;

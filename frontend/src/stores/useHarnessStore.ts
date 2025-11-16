@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { addEdge, applyNodeChanges, applyEdgeChanges } from 'reactflow';
@@ -71,7 +72,15 @@ const useHarnessStore = create<HarnessState>()(
       },
       onConnect: (connection: Connection) => {
         set((state) => {
-          state.edges = addEdge(connection, state.edges);
+          const newEdge = {
+            ...connection,
+            id: uuidv4(), // Generate a unique ID for the edge
+            data: {
+              wire_id: uuidv4(), // Generate a unique wire_id
+              color: 'black', // Default color
+            },
+          };
+          state.edges = addEdge(newEdge, state.edges);
         });
         const { nodes, edges, harnessId } = get();
         if (harnessId) {
