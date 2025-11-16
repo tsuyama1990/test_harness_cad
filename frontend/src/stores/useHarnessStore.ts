@@ -1,16 +1,14 @@
 import { create } from 'zustand';
-import {
+import { addEdge, applyNodeChanges, applyEdgeChanges } from 'reactflow';
+import type {
   Connection,
   Edge,
   EdgeChange,
   Node,
   NodeChange,
-  addEdge,
   OnNodesChange,
   OnEdgesChange,
   OnConnect,
-  applyNodeChanges,
-  applyEdgeChanges,
 } from 'reactflow';
 import { updateHarness } from '../services/api';
 import {

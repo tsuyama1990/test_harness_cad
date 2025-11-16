@@ -1,5 +1,6 @@
 import React from 'react';
 import { getBezierPath, EdgeLabelRenderer, BaseEdge } from 'reactflow';
+import type { Position } from 'reactflow';
 
 interface CustomWireEdgeProps {
   id: string;
@@ -7,8 +8,8 @@ interface CustomWireEdgeProps {
   sourceY: number;
   targetX: number;
   targetY: number;
-  sourcePosition: string;
-  targetPosition: string;
+  sourcePosition: Position;
+  targetPosition: Position;
   style?: React.CSSProperties;
   data: {
     color: string;

@@ -1,4 +1,4 @@
-import { Node, Edge } from 'reactflow';
+import type { Node, Edge } from 'reactflow';
 
 // This mirrors the Pydantic schemas in the backend
 export interface PinData {
