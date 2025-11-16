@@ -49,6 +49,7 @@ const CustomConnectorNode: React.FC<CustomConnectorNodeProps> = ({ data }) => {
               position={Position.Right}
               id={pin.id}
               style={{ top: `${index * pinHeight + 25}px` }}
+              data-testid={`handle-source-${data.label}-${pin.id}`}
             />
             <span style={{ fontSize: '12px' }}>{pin.id}</span>
             <Handle
@@ -56,6 +57,7 @@ const CustomConnectorNode: React.FC<CustomConnectorNodeProps> = ({ data }) => {
               position={Position.Left}
               id={pin.id}
               style={{ top: `${index * pinHeight + 25}px` }}
+              data-testid={`handle-target-${data.label}-${pin.id}`}
             />
           </div>
         ))}

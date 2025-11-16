@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { HarnessData } from '../utils/dataTransformer';
+import type { HarnessData } from '../utils/dataTransformer';
 
 const API_BASE_URL = '/api/v1';
 
@@ -25,11 +25,30 @@ export const updateHarness = async (
 
 // --- Component Library API ---
 
-export interface LibraryComponent {
-  id: string;
-  type: 'connector' | 'wire';
+
+
+interface LibraryComponentData {
+
   name: string;
-  data: any;
+
+  part_number: string;
+
+  pins: { id: string }[];
+
+}
+
+
+
+export interface LibraryComponent {
+
+  id: string;
+
+  type: 'connector' | 'wire';
+
+  name: string;
+
+  data: LibraryComponentData;
+
 }
 
 export const getComponents = async (): Promise<LibraryComponent[]> => {
