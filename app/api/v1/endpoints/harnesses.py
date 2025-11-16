@@ -27,6 +27,23 @@ def create_harness(
     return harness
 
 
+@router.get("/{harness_id}", response_model=schemas.HarnessFull)
+def get_harness(
+    *,
+    db: Session = Depends(deps.get_db),
+    harness_id: UUID,
+):
+    """
+    Get full harness data.
+    """
+    try:
+        harness = harness_service.get_harness(db=db, harness_id=harness_id)
+    except HarnessNotFoundException:
+        raise HTTPException(status_code=404, detail="Harness not found")
+
+    return harness
+
+
 @router.get("/{harness_id}/bom", response_model=schemas.BomResponse)
 def get_bom(
     *,
