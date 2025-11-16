@@ -1,5 +1,4 @@
 import React from 'react';
-import useHarnessStore from '../stores/useHarnessStore';
 
 const AttributeEditorPanel: React.FC = () => {
   // This is a placeholder for the attribute editor.
