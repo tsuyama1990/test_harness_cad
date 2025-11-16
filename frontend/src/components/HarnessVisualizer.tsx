@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useRef } from 'react';
+import React, { useCallback, useRef } from 'react';
 import ReactFlow, {
   Controls,
   Background,
@@ -7,10 +7,11 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import useHarnessStore from '../stores/useHarnessStore';
-import { getHarness } from '../services/api';
-import { transformHarnessToFlow } from '../utils/dataTransformer';
 import CustomConnectorNode from './CustomConnectorNode';
 import CustomWireEdge from './CustomWireEdge';
+import { useHarnessData } from '../hooks/useHarnessData';
+import { useReactFlowCallbacks } from '../hooks/useReactFlowCallbacks';
+import { useHarnessSync } from '../hooks/useHarnessSync';
 
 const nodeTypes = { customConnector: CustomConnectorNode };
 const edgeTypes = { customWire: CustomWireEdge };
@@ -20,34 +21,23 @@ interface HarnessVisualizerProps {
 }
 
 const HarnessVisualizer: React.FC<HarnessVisualizerProps> = ({ harnessId }) => {
-  const {
-    nodes,
-    edges,
-    setInitialData,
-    onNodesChange,
-    onEdgesChange,
-    onConnect,
-    setHarnessId,
-    setNodes, // Keep for onDrop
-  } = useHarnessStore();
+  // --- Custom Hooks for Logic Separation ---
+  const { loading, error } = useHarnessData(harnessId);
+  const { onNodesChange, onEdgesChange, onConnect } = useReactFlowCallbacks();
+  useHarnessSync(); // This hook handles background synchronization
+
+  // --- Store State and Actions ---
+  const { nodes, edges, addNode } = useHarnessStore((state) => ({
+    nodes: state.nodes,
+    edges: state.edges,
+    addNode: state.addNode,
+  }));
+
+  // --- React Flow Instance and Refs ---
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const { screenToFlowPosition } = useReactFlow();
 
-  useEffect(() => {
-    setHarnessId(harnessId);
-    const fetchHarnessData = async () => {
-      try {
-        const harnessData = await getHarness(harnessId);
-        const { nodes: transformedNodes, edges: transformedEdges } =
-          transformHarnessToFlow(harnessData);
-        setInitialData(transformedNodes, transformedEdges);
-      } catch (error) {
-        console.error('Failed to fetch harness data:', error);
-      }
-    };
-    fetchHarnessData();
-  }, [harnessId, setHarnessId, setInitialData]);
-
+  // --- Drag and Drop Handlers ---
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
@@ -57,18 +47,18 @@ const HarnessVisualizer: React.FC<HarnessVisualizerProps> = ({ harnessId }) => {
     (event: React.DragEvent) => {
       event.preventDefault();
 
-      const reactFlowBounds = reactFlowWrapper.current?.getBoundingClientRect();
       const type = event.dataTransfer.getData('application/reactflow-type');
-      const data = JSON.parse(event.dataTransfer.getData('application/reactflow-data'));
+      const dataString = event.dataTransfer.getData('application/reactflow-data');
 
-      // check if the dropped element is valid
-      if (typeof type === 'undefined' || !type) {
+      if (!type || !dataString || !reactFlowWrapper.current) {
         return;
       }
+      const data = JSON.parse(dataString);
+      const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
 
       const position = screenToFlowPosition({
-        x: event.clientX - (reactFlowBounds?.left ?? 0),
-        y: event.clientY - (reactFlowBounds?.top ?? 0),
+        x: event.clientX - reactFlowBounds.left,
+        y: event.clientY - reactFlowBounds.top,
       });
 
       const newNode = {
@@ -77,15 +67,17 @@ const HarnessVisualizer: React.FC<HarnessVisualizerProps> = ({ harnessId }) => {
         position,
         data: {
           label: data.name,
-          part_number: data.part_number,
-          pins: data.pins,
+          ...data,
         },
       };
-
-      setNodes([...nodes, newNode]);
+      addNode(newNode);
     },
-    [screenToFlowPosition, nodes, setNodes]
+    [screenToFlowPosition, addNode]
   );
+
+  // --- Render Logic ---
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error loading harness data.</div>;
 
   return (
     <div style={{ width: '100%', height: '100%' }} ref={reactFlowWrapper}>
