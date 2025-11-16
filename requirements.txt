@@ -5,3 +5,4 @@ alembic
 pydantic-settings
 kicad-sch-api
 pytest
+sqlalchemy-stubs
