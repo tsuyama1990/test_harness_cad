@@ -150,8 +150,9 @@ class HarnessService:
             .options(
                 joinedload(models.Harness.connectors).joinedload(models.Connector.pins),
                 joinedload(models.Harness.wires),
-                joinedload(models.Harness.connections)
-                .joinedload(models.Connection.wire),
+                joinedload(models.Harness.connections).joinedload(
+                    models.Connection.wire
+                ),
                 joinedload(models.Harness.connections)
                 .joinedload(models.Connection.from_pin)
                 .joinedload(models.Pin.connector),
@@ -164,7 +165,7 @@ class HarnessService:
 
         if not db_harness:
             raise HarnessNotFoundException()
-        return db_harness
+        return db_harness  # type: ignore
 
     def generate_bom(self, db_harness: models.Harness) -> schemas.BomResponse:
         connector_bom = {}

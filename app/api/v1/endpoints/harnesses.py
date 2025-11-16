@@ -73,7 +73,13 @@ def get_harness(
                 "to_pin_id": conn.to_pin.logical_id,
             }
             for conn in db_harness.connections
-            if conn.wire and conn.from_pin and conn.to_pin and conn.from_pin.connector and conn.to_pin.connector
+            if (
+                conn.wire
+                and conn.from_pin
+                and conn.to_pin
+                and conn.from_pin.connector
+                and conn.to_pin.connector
+            )
         ],
     }
 

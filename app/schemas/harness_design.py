@@ -21,3 +21,8 @@ class DesignData(BaseModel):
 
 class DesignSave(BaseModel):
     design_data: DesignData
+
+
+class HarnessDesignSaveResponse(BaseModel):
+    status: str
+    harness_design_id: int
