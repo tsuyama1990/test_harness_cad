@@ -65,6 +65,34 @@ To run the frontend development server:
 
 The frontend application will be available at `http://localhost:5173` (or the next available port). It is configured to proxy API requests to the backend server running on `http://127.0.0.1:8000`.
 
+### Running E2E Tests
+
+The End-to-End (E2E) tests use Playwright to simulate real user interactions in a live environment. This requires both the backend and frontend servers to be running.
+
+1.  **Start the Backend Server:**
+    In your first terminal, navigate to the project root and run the FastAPI server:
+    ```bash
+    # Make sure you are in the project root directory
+    source .venv/bin/activate
+    uvicorn app.main:app --host 0.0.0.0 --port 8000
+    ```
+
+2.  **Start the Frontend Server:**
+    In a second terminal, navigate to the `frontend` directory and run the Vite dev server:
+    ```bash
+    # Make sure you are in the frontend directory
+    cd frontend
+    npm run dev
+    ```
+
+3.  **Run the Playwright Tests:**
+    Once both servers are running, open a third terminal, navigate to the `frontend` directory, and execute the tests:
+    ```bash
+    # Make sure you are in the frontend directory
+    cd frontend
+    npm run test:e2e
+    ```
+
 ## Getting Started
 
 ### Prerequisites
