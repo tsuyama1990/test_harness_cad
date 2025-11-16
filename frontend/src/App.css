@@ -1,42 +1,44 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+.app-container {
+  display: flex;
+  height: 100vh; /* Ensure the container takes up the full viewport height */
+  width: 100vw;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 200px;
+  border-right: 1px solid #ccc;
+  padding: 10px;
+  background-color: #f7f7f7;
+  flex-shrink: 0; /* Prevent sidebar from shrinking */
+}
+
+.main-content {
+  flex-grow: 1;
+  position: relative;
+  height: 100%; /* Ensure it fills the height of the container */
+}
+
+.harness-visualizer-wrapper {
+  width: 100%;
+  height: 100%;
+}
+
+.attribute-editor-panel {
+  width: 250px;
+  border-left: 1px solid #ccc;
+  padding: 10px;
+  background-color: #f7f7f7;
+  flex-shrink: 0; /* Prevent editor from shrinking */
+}
+
+/* Basic styling for draggable nodes in the sidebar */
+.sidebar-component {
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: grab;
   text-align: center;
-}
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
+  background-color: white;
 }

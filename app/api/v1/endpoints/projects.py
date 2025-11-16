@@ -25,7 +25,8 @@ def create_project(
             status_code=400,
             detail="A project with this name already exists.",
         )
-    db_project = Project(name=project_in.name)
+    db_project = Project()
+    db_project.name = project_in.name
     db.add(db_project)
     db.commit()
     db.refresh(db_project)
@@ -61,9 +62,9 @@ def save_harness_design(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    harness_design = HarnessDesign(
-        project_id=project_id, design_data=design_in.design_data.model_dump()
-    )
+    harness_design = HarnessDesign()
+    harness_design.project_id = project_id
+    harness_design.design_data = design_in.design_data.model_dump()
     db.add(harness_design)
     db.commit()
     db.refresh(harness_design)

@@ -1,0 +1,44 @@
+import React, { useEffect, useState } from 'react';
+import { getComponents, LibraryComponent } from '../services/api';
+
+const Sidebar: React.FC = () => {
+  const [components, setComponents] = useState<LibraryComponent[]>([]);
+
+  useEffect(() => {
+    const fetchComponents = async () => {
+      try {
+        const componentList = await getComponents();
+        setComponents(componentList);
+      } catch (error) {
+        console.error('Failed to fetch components:', error);
+      }
+    };
+    fetchComponents();
+  }, []);
+
+  const onDragStart = (event: React.DragEvent, component: LibraryComponent) => {
+    event.dataTransfer.setData('application/reactflow-type', 'customConnector');
+    event.dataTransfer.setData('application/reactflow-data', JSON.stringify(component.data));
+    event.dataTransfer.effectAllowed = 'move';
+  };
+
+  return (
+    <aside className="sidebar">
+      <h3>Component Library</h3>
+      {components
+        .filter((c) => c.type === 'connector')
+        .map((component) => (
+          <div
+            key={component.id}
+            className="sidebar-component"
+            onDragStart={(event) => onDragStart(event, component)}
+            draggable
+          >
+            {component.name}
+          </div>
+        ))}
+    </aside>
+  );
+};
+
+export default Sidebar;

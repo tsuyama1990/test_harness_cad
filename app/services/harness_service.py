@@ -11,7 +11,8 @@ class HarnessService:
         self, db: Session, harness_in: schemas.HarnessCreate
     ) -> models.Harness:
         # Create Harness
-        db_harness = models.Harness(name=harness_in.name)
+        db_harness = models.Harness()
+        db_harness.name = harness_in.name
         db.add(db_harness)
         db.flush()
 
@@ -19,17 +20,18 @@ class HarnessService:
         connector_map = {}
         pin_map = {}
         for conn_in in harness_in.connectors:
-            db_conn = models.Connector(
-                logical_id=conn_in.id,
-                manufacturer=conn_in.manufacturer,
-                part_number=conn_in.part_number,
-                harness_id=db_harness.id,
-            )
+            db_conn = models.Connector()
+            db_conn.logical_id = conn_in.id
+            db_conn.manufacturer = conn_in.manufacturer
+            db_conn.part_number = conn_in.part_number
+            db_conn.harness_id = db_harness.id
             db.add(db_conn)
             db.flush()
             connector_map[conn_in.id] = db_conn
             for pin_in in conn_in.pins:
-                db_pin = models.Pin(logical_id=pin_in.id, connector_id=db_conn.id)
+                db_pin = models.Pin()
+                db_pin.logical_id = pin_in.id
+                db_pin.connector_id = db_conn.id
                 db.add(db_pin)
                 db.flush()
                 pin_map[f"{conn_in.id}-{pin_in.id}"] = db_pin
@@ -37,15 +39,14 @@ class HarnessService:
         # Create Wires
         wire_map = {}
         for wire_in in harness_in.wires:
-            db_wire = models.Wire(
-                logical_id=wire_in.id,
-                manufacturer=wire_in.manufacturer,
-                part_number=wire_in.part_number,
-                color=wire_in.color,
-                gauge=wire_in.gauge,
-                length=wire_in.length,
-                harness_id=db_harness.id,
-            )
+            db_wire = models.Wire()
+            db_wire.logical_id = wire_in.id
+            db_wire.manufacturer = wire_in.manufacturer
+            db_wire.part_number = wire_in.part_number
+            db_wire.color = wire_in.color
+            db_wire.gauge = wire_in.gauge
+            db_wire.length = wire_in.length
+            db_wire.harness_id = db_harness.id
             db.add(db_wire)
             db.flush()
             wire_map[wire_in.id] = db_wire
@@ -60,12 +61,82 @@ class HarnessService:
             if conn_data.wire_id not in wire_map:
                 raise InvalidHarnessDataException("Wire not found for connection.")
 
-            db_connection = models.Connection(
-                harness_id=db_harness.id,
-                wire_id=wire_map[conn_data.wire_id].id,
-                from_pin_id=pin_map[from_pin_key].id,
-                to_pin_id=pin_map[to_pin_key].id,
-            )
+            db_connection = models.Connection()
+            db_connection.harness_id = db_harness.id
+            db_connection.wire_id = wire_map[conn_data.wire_id].id
+            db_connection.from_pin_id = pin_map[from_pin_key].id
+            db_connection.to_pin_id = pin_map[to_pin_key].id
+            db.add(db_connection)
+
+        db.commit()
+        db.refresh(db_harness)
+        return db_harness
+
+    def update_harness(
+        self, db: Session, harness_id: UUID, harness_in: schemas.HarnessCreate
+    ) -> models.Harness:
+        db_harness = self.get_harness(db=db, harness_id=harness_id)
+
+        # Clear existing data
+        for connection in db_harness.connections:
+            db.delete(connection)
+        for wire in db_harness.wires:
+            db.delete(wire)
+        for connector in db_harness.connectors:
+            db.delete(connector)  # Pins will be cascade-deleted
+        db.flush()
+
+        # Update harness name
+        db_harness.name = harness_in.name
+
+        # Re-create components from the input schema
+        connector_map = {}
+        pin_map = {}
+        for conn_in in harness_in.connectors:
+            db_conn = models.Connector()
+            db_conn.logical_id = conn_in.id
+            db_conn.manufacturer = conn_in.manufacturer
+            db_conn.part_number = conn_in.part_number
+            db_conn.harness_id = db_harness.id
+            db.add(db_conn)
+            db.flush()
+            connector_map[conn_in.id] = db_conn
+            for pin_in in conn_in.pins:
+                db_pin = models.Pin()
+                db_pin.logical_id = pin_in.id
+                db_pin.connector_id = db_conn.id
+                db.add(db_pin)
+                db.flush()
+                pin_map[f"{conn_in.id}-{pin_in.id}"] = db_pin
+
+        wire_map = {}
+        for wire_in in harness_in.wires:
+            db_wire = models.Wire()
+            db_wire.logical_id = wire_in.id
+            db_wire.manufacturer = wire_in.manufacturer
+            db_wire.part_number = wire_in.part_number
+            db_wire.color = wire_in.color
+            db_wire.gauge = wire_in.gauge
+            db_wire.length = wire_in.length
+            db_wire.harness_id = db_harness.id
+            db.add(db_wire)
+            db.flush()
+            wire_map[wire_in.id] = db_wire
+
+        for conn_data in harness_in.connections:
+            from_pin_key = f"{conn_data.from_connector_id}-{conn_data.from_pin_id}"
+            to_pin_key = f"{conn_data.to_connector_id}-{conn_data.to_pin_id}"
+
+            if from_pin_key not in pin_map or to_pin_key not in pin_map:
+                raise InvalidHarnessDataException("Pin not found for connection.")
+            if conn_data.wire_id not in wire_map:
+                raise InvalidHarnessDataException("Wire not found for connection.")
+
+            db_connection = models.Connection()
+            db_connection.harness_id = db_harness.id
+            db_connection.wire_id = wire_map[conn_data.wire_id].id
+            db_connection.from_pin_id = pin_map[from_pin_key].id
+            db_connection.to_pin_id = pin_map[to_pin_key].id
             db.add(db_connection)
 
         db.commit()
