@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getComponents, LibraryComponent } from '../services/api';
+import { getComponents, type LibraryComponent } from '../services/api';
 
 const Sidebar: React.FC = () => {
   const [components, setComponents] = useState<LibraryComponent[]>([]);
@@ -23,7 +23,7 @@ const Sidebar: React.FC = () => {
   };
 
   return (
-    <aside className="sidebar">
+    <aside className="sidebar" data-testid="sidebar">
       <h3>Component Library</h3>
       {components
         .filter((c) => c.type === 'connector')
@@ -33,6 +33,7 @@ const Sidebar: React.FC = () => {
             className="sidebar-component"
             onDragStart={(event) => onDragStart(event, component)}
             draggable
+            data-testid={`component-${component.name}`}
           >
             {component.name}
           </div>

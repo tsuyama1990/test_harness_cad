@@ -1,10 +1,10 @@
-import React, { useEffect, useCallback, useRef } from 'react';
+import React, { useEffect, useCallback, useRef, useState } from 'react';
 import ReactFlow, {
   Controls,
   Background,
   MiniMap,
-  useReactFlow,
 } from 'reactflow';
+import type { ReactFlowInstance } from 'reactflow';
 import 'reactflow/dist/style.css';
 import useHarnessStore from '../stores/useHarnessStore';
 import { getHarness } from '../services/api';
@@ -19,7 +19,8 @@ interface HarnessVisualizerProps {
   harnessId: string;
 }
 
-const HarnessVisualizer: React.FC<HarnessVisualizerProps> = ({ harnessId }) => {
+// The core logic is moved into this new component.
+const FlowCanvas: React.FC<HarnessVisualizerProps> = ({ harnessId }) => {
   const {
     nodes,
     edges,
@@ -31,7 +32,7 @@ const HarnessVisualizer: React.FC<HarnessVisualizerProps> = ({ harnessId }) => {
     setNodes, // Keep for onDrop
   } = useHarnessStore();
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
-  const { screenToFlowPosition } = useReactFlow();
+  const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance | null>(null);
 
   useEffect(() => {
     setHarnessId(harnessId);
@@ -57,7 +58,10 @@ const HarnessVisualizer: React.FC<HarnessVisualizerProps> = ({ harnessId }) => {
     (event: React.DragEvent) => {
       event.preventDefault();
 
-      const reactFlowBounds = reactFlowWrapper.current?.getBoundingClientRect();
+      if (!reactFlowInstance) {
+        return;
+      }
+
       const type = event.dataTransfer.getData('application/reactflow-type');
       const data = JSON.parse(event.dataTransfer.getData('application/reactflow-data'));
 
@@ -66,9 +70,9 @@ const HarnessVisualizer: React.FC<HarnessVisualizerProps> = ({ harnessId }) => {
         return;
       }
 
-      const position = screenToFlowPosition({
-        x: event.clientX - (reactFlowBounds?.left ?? 0),
-        y: event.clientY - (reactFlowBounds?.top ?? 0),
+      const position = reactFlowInstance.screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
       });
 
       const newNode = {
@@ -84,11 +88,11 @@ const HarnessVisualizer: React.FC<HarnessVisualizerProps> = ({ harnessId }) => {
 
       setNodes([...nodes, newNode]);
     },
-    [screenToFlowPosition, nodes, setNodes]
+    [reactFlowInstance, nodes, setNodes]
   );
 
   return (
-    <div style={{ width: '100%', height: '100%' }} ref={reactFlowWrapper}>
+    <div style={{ width: '100%', height: '100%' }} ref={reactFlowWrapper} data-testid="rf-canvas-wrapper">
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -99,6 +103,7 @@ const HarnessVisualizer: React.FC<HarnessVisualizerProps> = ({ harnessId }) => {
         edgeTypes={edgeTypes}
         onDragOver={onDragOver}
         onDrop={onDrop}
+        onLoad={setReactFlowInstance}
         fitView
       >
         <Controls />
@@ -107,6 +112,14 @@ const HarnessVisualizer: React.FC<HarnessVisualizerProps> = ({ harnessId }) => {
       </ReactFlow>
     </div>
   );
+};
+
+
+// The exported component remains the same, but now it just renders the FlowCanvas.
+// Since FlowCanvas is a child of HarnessVisualizer, and HarnessVisualizer is a child
+// of ReactFlowProvider in App.tsx, we ensure the context is available.
+const HarnessVisualizer: React.FC<HarnessVisualizerProps> = ({ harnessId }) => {
+  return <FlowCanvas harnessId={harnessId} />;
 };
 
 export default HarnessVisualizer;

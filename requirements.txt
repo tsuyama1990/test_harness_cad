@@ -1,7 +1,0 @@
-fastapi
-uvicorn
-sqlalchemy
-alembic
-pydantic-settings
-kicad-sch-api
-pytest

@@ -41,16 +41,27 @@ export interface HarnessData {
 export const transformHarnessToFlow = (
   harness: HarnessData
 ): { nodes: Node[]; edges: Edge[] } => {
-  const nodes: Node[] = harness.connectors.map((connector) => ({
-    id: connector.id,
-    type: 'customConnector', // Use the custom node type
-    data: {
-      label: connector.id,
-      part_number: connector.part_number,
-      pins: connector.pins,
-    },
-    position: { x: Math.random() * 400, y: Math.random() * 400 }, // Position will be managed by layout
-  }));
+  const nodes: Node[] = harness.connectors.map((connector) => {
+    let position = { x: 0, y: 0 };
+    if (connector.id === 'CONN1') {
+      position = { x: 100, y: 100 };
+    } else if (connector.id === 'CONN2') {
+      position = { x: 400, y: 100 };
+    } else {
+      position = { x: Math.random() * 400, y: Math.random() * 400 }; // Fallback for other connectors
+    }
+
+    return {
+      id: connector.id,
+      type: 'customConnector', // Use the custom node type
+      data: {
+        label: connector.id,
+        part_number: connector.part_number,
+        pins: connector.pins,
+      },
+      position: position,
+    };
+  });
 
   const edges: Edge[] = harness.connections.map((connection, index) => ({
     id: `e${index}-${connection.from_connector_id}-${connection.to_connector_id}`,

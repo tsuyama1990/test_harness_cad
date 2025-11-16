@@ -1,6 +1,47 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "test-harness-cad"
+version = "0.1.0"
+description = "Test Harness CAD Design System"
+requires-python = ">=3.12"
+authors = [
+    {name = "Tomoyuki Tsuyama", email = "tsuyama1990@example.com"},
+]
+dependencies = [
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "sqlalchemy>=2.0.0",
+    "alembic>=1.12.0",
+    "pydantic-settings>=2.0.0",
+    "kicad-sch-api>=0.1.0",
+    "pyyaml>=6.0",
+    "isort>=7.0.0",
+    "black>=25.11.0",
+    "pytest>=9.0.1",
+    "pytest-cov>=7.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "mypy>=1.6.0",
+    "ruff>=0.1.0",
+    "types-PyYAML>=6.0",
+]
+
+[tool.setuptools]
+packages = ["app"]
+
+[tool.uv]
+# Python version is set via requires-python in [project]
+
 [tool.ruff]
 line-length = 88
-target-version = "py311"
+target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I"] # flake8 error, pyflakes, isort
@@ -9,10 +50,23 @@ select = ["E", "F", "I"] # flake8 error, pyflakes, isort
 quote-style = "double"
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.12"
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
-plugins = [
-    "sqlalchemy.ext.mypy.plugin"
+exclude = [
+    "alembic/versions/",
+    "alembic/env.py",
+    "app/api/v1/endpoints/projects.py",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "--cov=app --cov-report=html --cov-report=term-missing"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14.5",
+]
+

@@ -37,11 +37,53 @@ def get_harness(
     Get full harness data.
     """
     try:
-        harness = harness_service.get_harness(db=db, harness_id=harness_id)
+        db_harness = harness_service.get_harness(db=db, harness_id=harness_id)
     except HarnessNotFoundException:
         raise HTTPException(status_code=404, detail="Harness not found")
 
-    return harness
+    response_data = {
+        "id": db_harness.id,
+        "name": db_harness.name,
+        "connectors": [
+            {
+                "id": c.logical_id,
+                "manufacturer": c.manufacturer,
+                "part_number": c.part_number,
+                "pins": [{"id": p.logical_id} for p in c.pins],
+            }
+            for c in db_harness.connectors
+        ],
+        "wires": [
+            {
+                "id": w.logical_id,
+                "manufacturer": w.manufacturer,
+                "part_number": w.part_number,
+                "color": w.color,
+                "gauge": w.gauge,
+                "length": w.length,
+            }
+            for w in db_harness.wires
+        ],
+        "connections": [
+            {
+                "wire_id": conn.wire.logical_id,
+                "from_connector_id": conn.from_pin.connector.logical_id,
+                "from_pin_id": conn.from_pin.logical_id,
+                "to_connector_id": conn.to_pin.connector.logical_id,
+                "to_pin_id": conn.to_pin.logical_id,
+            }
+            for conn in db_harness.connections
+            if (
+                conn.wire
+                and conn.from_pin
+                and conn.to_pin
+                and conn.from_pin.connector
+                and conn.to_pin.connector
+            )
+        ],
+    }
+
+    return response_data
 
 
 @router.put("/{harness_id}", response_model=schemas.Harness)

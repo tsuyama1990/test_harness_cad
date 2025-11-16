@@ -1,3 +1,5 @@
+from typing import cast
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -15,7 +17,7 @@ def create_project(
     *,
     db: Session = Depends(deps.get_db),
     project_in: project_schema.ProjectCreate,
-) -> Project:
+) -> project_schema.Project:
     """
     Create a new project.
     """
@@ -38,23 +40,25 @@ def get_project(
     *,
     db: Session = Depends(deps.get_db),
     project_id: int,
-) -> Project:
+) -> project_schema.Project:
     """
     Get a project by its ID.
     """
     project = db.query(Project).filter(Project.id == project_id).first()
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
-    return project
+    return cast(Project, project)
 
 
-@router.post("/{project_id}/save")
+@router.post(
+    "/{project_id}/save", response_model=harness_design_schema.HarnessDesignSaveResponse
+)
 def save_harness_design(
     *,
-    db: Session = Depends(deps.get_db),
+    db: Session = Depends(deps.get_db),  # type: ignore[no-any-return]
     project_id: int,
     design_in: harness_design_schema.DesignSave,
-) -> dict:
+) -> harness_design_schema.HarnessDesignSaveResponse:
     """
     Save a new harness design for a project.
     """
@@ -68,4 +72,6 @@ def save_harness_design(
     db.add(harness_design)
     db.commit()
     db.refresh(harness_design)
-    return {"status": "success", "harness_design_id": harness_design.id}
+    return harness_design_schema.HarnessDesignSaveResponse(
+        status="success", harness_design_id=harness_design.id
+    )
