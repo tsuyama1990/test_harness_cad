@@ -3,3 +3,4 @@ ruff
 mypy
 types-PyYAML
 pytest-cov
+sqlalchemy-stubs
