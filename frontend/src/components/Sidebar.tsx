@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { getComponents, type LibraryComponent } from '../services/api';
+import useHarnessStore from '../stores/useHarnessStore';
+import { API_BASE_URL } from '../services/api';
 
 const Sidebar: React.FC = () => {
   const [components, setComponents] = useState<LibraryComponent[]>([]);
+  const { harnessId } = useHarnessStore();
 
   useEffect(() => {
     const fetchComponents = async () => {
@@ -38,6 +41,40 @@ const Sidebar: React.FC = () => {
             {component.name}
           </div>
         ))}
+      <h3>Exports</h3>
+      <button
+        onClick={() =>
+          window.open(
+            `${API_BASE_URL}/harnesses/${harnessId}/strip-list`,
+            '_blank'
+          )
+        }
+        disabled={!harnessId}
+      >
+        Export Strip List (CSV)
+      </button>
+      <button
+        onClick={() =>
+          window.open(
+            `${API_BASE_URL}/harnesses/${harnessId}/mark-tube-list`,
+            '_blank'
+          )
+        }
+        disabled={!harnessId}
+      >
+        Export Mark Tube List (CSV)
+      </button>
+      <button
+        onClick={() =>
+          window.open(
+            `${API_BASE_URL}/harnesses/${harnessId}/formboard-pdf`,
+            '_blank'
+          )
+        }
+        disabled={!harnessId}
+      >
+        Export Formboard (PDF)
+      </button>
     </aside>
   );
 };

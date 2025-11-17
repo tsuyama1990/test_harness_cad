@@ -100,6 +100,14 @@ class Connection(Base):
         UUID(as_uuid=True), ForeignKey("pins.id"), nullable=False
     )
 
+    # Assembly instructions
+    strip_length_a: Mapped[float | None] = mapped_column(Float, nullable=True)
+    strip_length_b: Mapped[float | None] = mapped_column(Float, nullable=True)
+    terminal_part_number_a: Mapped[str | None] = mapped_column(String, nullable=True)
+    terminal_part_number_b: Mapped[str | None] = mapped_column(String, nullable=True)
+    marking_text_a: Mapped[str | None] = mapped_column(String, nullable=True)
+    marking_text_b: Mapped[str | None] = mapped_column(String, nullable=True)
+
     harness: Mapped[Harness] = relationship("Harness", back_populates="connections")
     wire: Mapped[Wire] = relationship("Wire")
     from_pin: Mapped[Pin] = relationship("Pin", foreign_keys=[from_pin_id])

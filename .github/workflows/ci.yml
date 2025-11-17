@@ -20,8 +20,11 @@ jobs:
       - name: Install uv
         run: pip install uv
 
+      - name: Create virtual environment with uv
+        run: uv venv
+
       - name: Install dependencies with uv
-        run: uv sync
+        run: uv pip install -e .[dev]
 
       - name: Lint with ruff
         run: uv run ruff check .
@@ -57,8 +60,11 @@ jobs:
       - name: Install uv
         run: pip install uv
 
+      - name: Create virtual environment with uv
+        run: uv venv
+
       - name: Install Python dependencies
-        run: uv sync
+        run: uv pip install -e .[dev]
 
       - name: Install Node.js dependencies
         working-directory: ./frontend
@@ -74,6 +80,9 @@ jobs:
 
       - name: Run E2E tests
         run: |
+          # Apply database migrations
+          uv run alembic upgrade head
+
           # Start backend server using uv
           uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 &
 

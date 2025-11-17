@@ -1,5 +1,8 @@
+import io
 from uuid import UUID
 
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 from sqlalchemy.orm import Session, joinedload
 
 from app import models, schemas
@@ -66,6 +69,14 @@ class HarnessService:
             db_connection.wire_id = wire_map[conn_data.wire_id].id
             db_connection.from_pin_id = pin_map[from_pin_key].id
             db_connection.to_pin_id = pin_map[to_pin_key].id
+
+            # Add assembly instructions
+            db_connection.strip_length_a = conn_data.strip_length_a
+            db_connection.strip_length_b = conn_data.strip_length_b
+            db_connection.terminal_part_number_a = conn_data.terminal_part_number_a
+            db_connection.terminal_part_number_b = conn_data.terminal_part_number_b
+            db_connection.marking_text_a = conn_data.marking_text_a
+            db_connection.marking_text_b = conn_data.marking_text_b
             db.add(db_connection)
 
         db.commit()
@@ -137,6 +148,14 @@ class HarnessService:
             db_connection.wire_id = wire_map[conn_data.wire_id].id
             db_connection.from_pin_id = pin_map[from_pin_key].id
             db_connection.to_pin_id = pin_map[to_pin_key].id
+
+            # Add assembly instructions
+            db_connection.strip_length_a = conn_data.strip_length_a
+            db_connection.strip_length_b = conn_data.strip_length_b
+            db_connection.terminal_part_number_a = conn_data.terminal_part_number_a
+            db_connection.terminal_part_number_b = conn_data.terminal_part_number_b
+            db_connection.marking_text_a = conn_data.marking_text_a
+            db_connection.marking_text_b = conn_data.marking_text_b
             db.add(db_connection)
 
         db.commit()
@@ -220,6 +239,32 @@ class HarnessService:
                 )
             )
         return schemas.FromToResponse(items=items)
+
+    def generate_formboard_pdf(self, db_harness: models.Harness) -> bytes:
+        buffer = io.BytesIO()
+        p = canvas.Canvas(buffer, pagesize=letter)
+        width, height = letter
+
+        # This is a placeholder for the actual drawing logic.
+        # In a real implementation, you would iterate through the harness data
+        # and draw the connectors and wires to scale.
+        p.drawString(100, height - 100, f"Formboard for Harness: {db_harness.name}")
+
+        # Draw a simple representation of connectors
+        for i, connector in enumerate(db_harness.connectors):
+            p.drawString(
+                100, height - 150 - (i * 50), f"Connector: {connector.logical_id}"
+            )
+
+        # Draw a simple representation of wires
+        for i, wire in enumerate(db_harness.wires):
+            p.drawString(300, height - 150 - (i * 50), f"Wire: {wire.logical_id}")
+
+        p.showPage()
+        p.save()
+
+        buffer.seek(0)
+        return buffer.getvalue()
 
 
 harness_service = HarnessService()

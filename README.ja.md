@@ -23,6 +23,9 @@
 -   `GET /api/v1/harnesses/{harness_id}/bom`: 指定されたハーネスの部品表（BOM）を返します。
 -   `GET /api/v1/harnesses/{harness_id}/cutlist`: ハーネスのワイヤーカットリストを返します。
 -   `GET /api/v1/harnesses/{harness_id}/fromto`: ハーネスの結線リスト（From-Toリスト）を返します。
+-   `GET /api/v1/harnesses/{harness_id}/strip-list`: 電線のストリップ情報を記載したCSVファイルを返します。
+-   `GET /api/v1/harnesses/{harness_id}/mark-tube-list`: マークチューブ情報を記載したCSVファイルを返します。
+-   `GET /api/v1/harnesses/{harness_id}/formboard-pdf`: フォームボードのPDFファイルを返します。
 -   `GET /api/v1/components`: フロントエンドのコンポーネントライブラリ用に、利用可能なコンポーネント（コネクタ、電線）のリストを返します。
 
 ## プロジェクト構造

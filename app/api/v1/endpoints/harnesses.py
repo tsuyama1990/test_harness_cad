@@ -71,6 +71,12 @@ def get_harness(
                 "from_pin_id": conn.from_pin.logical_id,
                 "to_connector_id": conn.to_pin.connector.logical_id,
                 "to_pin_id": conn.to_pin.logical_id,
+                "strip_length_a": conn.strip_length_a,
+                "strip_length_b": conn.strip_length_b,
+                "terminal_part_number_a": conn.terminal_part_number_a,
+                "terminal_part_number_b": conn.terminal_part_number_b,
+                "marking_text_a": conn.marking_text_a,
+                "marking_text_b": conn.marking_text_b,
             }
             for conn in db_harness.connections
             if (

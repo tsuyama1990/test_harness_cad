@@ -23,6 +23,9 @@ The core of this service is the Harness API, which establishes a "Single Source 
 -   `GET /api/v1/harnesses/{harness_id}/bom`: Returns a Bill of Materials for the specified harness.
 -   `GET /api/v1/harnesses/{harness_id}/cutlist`: Returns a wire cutlist for the harness.
 -   `GET /api/v1/harnesses/{harness_id}/fromto`: Returns a from-to connection list for the harness.
+-   `GET /api/v1/harnesses/{harness_id}/strip-list`: Returns a CSV file with wire stripping information.
+-   `GET /api/v1/harnesses/{harness_id}/mark-tube-list`: Returns a CSV file with marking tube information.
+-   `GET /api/v1/harnesses/{harness_id}/formboard-pdf`: Returns a PDF file of the formboard.
 -   `GET /api/v1/components`: Returns a list of available components (connectors, wires) for the frontend component library.
 
 ## Project Structure

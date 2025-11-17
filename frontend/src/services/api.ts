@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { HarnessData } from '../utils/dataTransformer';
 
-const API_BASE_URL = '/api/v1';
+export const API_BASE_URL = '/api/v1';
 
 // --- Harness API ---
 
