@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 # --- Component Schemas for Creation ---
 
@@ -70,16 +70,14 @@ class Harness(BaseModel):
     id: UUID
     name: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class HarnessFull(HarnessCreate):
     id: UUID
     connections: list[ConnectionCreate]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # --- API Response Schemas ---

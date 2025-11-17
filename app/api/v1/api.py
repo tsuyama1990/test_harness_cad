@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import components, harness_exports, harnesses, projects
+from app.api.v1.endpoints import components, harness_exports, harnesses, projects, importer
 
 api_router = APIRouter()
 api_router.include_router(projects.router, prefix="/projects", tags=["projects"])

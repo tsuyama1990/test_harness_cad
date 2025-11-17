@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from typing import List
 
-from sqlalchemy import Float, ForeignKey, String
+from sqlalchemy import Boolean, Float, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -42,6 +42,14 @@ class Connector(Base):
         UUID(as_uuid=True), ForeignKey("harnesses.id"), nullable=False
     )
 
+    # Technical Specifications (from Catalog)
+    voltage_rating: Mapped[float | None] = mapped_column(Float, nullable=True)
+    applicable_wire_max_diameter: Mapped[float | None] = mapped_column(
+        Float, nullable=True
+    )
+    is_rohs: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    is_ul: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+
     harness: Mapped[Harness] = relationship("Harness", back_populates="connectors")
     pins: Mapped[List["Pin"]] = relationship(
         "Pin", back_populates="connector", cascade="all, delete-orphan"
@@ -77,6 +85,12 @@ class Wire(Base):
     harness_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("harnesses.id"), nullable=False
     )
+
+    # Technical Specifications (from Catalog)
+    voltage_rating: Mapped[float | None] = mapped_column(Float, nullable=True)
+    outer_diameter: Mapped[float | None] = mapped_column(Float, nullable=True)
+    is_rohs: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    is_ul: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
 
     harness: Mapped[Harness] = relationship("Harness", back_populates="wires")
 
