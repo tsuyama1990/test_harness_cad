@@ -1,9 +1,7 @@
-from unittest.mock import MagicMock
+
+import tempfile
 
 from fastapi.testclient import TestClient
-
-from app.api.deps import get_kicad_engine
-from app.main import app
 
 
 def test_create_project(client: TestClient):
@@ -53,12 +51,12 @@ def test_3d_model_upload_and_dxf_export(client: TestClient):
     assert response.status_code == 200
 
     # 3. Upload a 3D model
-    with open("test.glb", "wb") as f:
-        f.write(b"test")
-    with open("test.glb", "rb") as f:
+    with tempfile.NamedTemporaryFile(suffix=".glb") as tmp:
+        tmp.write(b"test")
+        tmp.seek(0)
         response = client.post(
             f"/api/v1/harnesses/{harness_id}/3d-model",
-            files={"file": ("test.glb", f, "model/gltf-binary")},
+            files={"file": (tmp.name, tmp, "model/gltf-binary")},
         )
     assert response.status_code == 200
 

@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class NodeData(BaseModel):
@@ -10,8 +10,6 @@ class NodeData(BaseModel):
     part_number: Optional[str] = None
     # Add other component-specific fields as needed
 
-
-from pydantic import BaseModel, ConfigDict
 
 class Node(BaseModel):
     id: str

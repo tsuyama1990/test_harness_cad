@@ -10,8 +10,8 @@ from .harness import (
     HarnessFull,
     Path3D,
     Point3D,
-    WireLength,
     Wire,
+    WireLength,
 )
 from .harness_design import (
     DesignData,

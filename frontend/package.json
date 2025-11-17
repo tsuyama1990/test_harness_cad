@@ -12,8 +12,8 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@react-three/drei": "^10.7.7",
-    "@react-three/fiber": "^9.4.0",
+    "@react-three/drei": "9.109.2",
+    "@react-three/fiber": "8.16.8",
     "@types/three": "^0.181.0",
     "axios": "^1.13.2",
     "dagre": "^0.8.5",

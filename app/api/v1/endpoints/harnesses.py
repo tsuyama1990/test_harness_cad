@@ -1,5 +1,4 @@
 import csv
-import csv
 import io
 import os
 import shutil
@@ -308,10 +307,18 @@ def upload_3d_model(
 
 
 @router.get("/uploads/{filename}")
-def get_uploaded_file(filename: str):
+def get_uploaded_file(filename: str, db: Session = Depends(deps.get_db)):
     """
     Serve an uploaded file.
     """
+    # Authorization check
+    try:
+        harness_id_str = filename.split("_")[0]
+        harness_id = UUID(harness_id_str)
+        harness_service.get_harness(db=db, harness_id=harness_id)
+    except (ValueError, IndexError, HarnessNotFoundException):
+        raise HTTPException(status_code=404, detail="File not found")
+
     file_path = UPLOAD_DIR / filename
     if not os.path.abspath(file_path).startswith(os.path.abspath(UPLOAD_DIR)):
         raise HTTPException(status_code=403, detail="Forbidden")
