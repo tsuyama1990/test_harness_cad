@@ -80,6 +80,9 @@ jobs:
 
       - name: Run E2E tests
         run: |
+          # Create database directory
+          mkdir -p /app/app
+
           # Apply database migrations
           uv run alembic upgrade head
 
