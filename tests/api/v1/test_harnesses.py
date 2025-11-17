@@ -49,6 +49,12 @@ SAMPLE_HARNESS = {
             "from_pin_id": "2",
             "to_connector_id": "CONN2",
             "to_pin_id": "B",
+            "strip_length_a": 6.0,
+            "strip_length_b": 6.0,
+            "terminal_part_number_a": "TERM-Z",
+            "terminal_part_number_b": "TERM-Y",
+            "marking_text_a": "W2-A",
+            "marking_text_b": "W2-B",
         },
     ],
 }
@@ -92,3 +98,18 @@ def test_create_harness(client: TestClient, db_session: Session) -> None:
     assert fromto["items"][0]["to_location"] == "CONN2-A"
     assert fromto["items"][1]["from_location"] == "CONN1-2"
     assert fromto["items"][1]["to_location"] == "CONN2-B"
+
+    # Test Strip List
+    response = client.get(f"/api/v1/harnesses/{harness_id}/strip-list")
+    assert response.status_code == 200
+    assert "text/csv" in response.headers["content-type"]
+
+    # Test Mark Tube List
+    response = client.get(f"/api/v1/harnesses/{harness_id}/mark-tube-list")
+    assert response.status_code == 200
+    assert "text/csv" in response.headers["content-type"]
+
+    # Test Formboard PDF
+    response = client.get(f"/api/v1/harnesses/{harness_id}/formboard-pdf")
+    assert response.status_code == 200
+    assert "application/pdf" in response.headers["content-type"]

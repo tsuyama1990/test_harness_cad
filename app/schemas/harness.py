@@ -44,6 +44,16 @@ class ConnectionCreate(BaseModel):
         ..., description="Logical ID of the destination connector"
     )
     to_pin_id: str = Field(..., description="Identifier of the destination pin")
+    strip_length_a: float | None = None
+    strip_length_b: float | None = None
+    terminal_part_number_a: str | None = None
+    terminal_part_number_b: str | None = None
+    marking_text_a: str | None = None
+    marking_text_b: str | None = None
+
+
+class Connection(ConnectionCreate):
+    pass
 
 
 # --- Harness Schemas ---
@@ -66,6 +76,7 @@ class Harness(BaseModel):
 
 class HarnessFull(HarnessCreate):
     id: UUID
+    connections: list[ConnectionCreate]
 
     class Config:
         from_attributes = True

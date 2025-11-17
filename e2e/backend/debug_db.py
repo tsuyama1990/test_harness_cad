@@ -1,14 +1,13 @@
-
 import os
 import sys
 
 # Add the project root to the Python path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
 
 import json
 import sqlite3
 
-db_path = 'app/test.db'
+db_path = "app/test.db"
 print("--- Starting DB Debug Script ---")
 print(f"Current working directory: {os.getcwd()}")
 print(f"Checking for database file at: {os.path.abspath(db_path)}")
@@ -21,21 +20,21 @@ try:
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    
+
     print(f"\n--- 1. Checking for tables in {db_path} ---")
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
     tables = cursor.fetchall()
     if not tables:
         print("RESULT: No tables found in the database.")
     else:
-        table_names = [table['name'] for table in tables]
+        table_names = [table["name"] for table in tables]
         print("RESULT: Tables found:", table_names)
 
-        if 'harnesses' in table_names:
+        if "harnesses" in table_names:
             print("\n--- 2. Checking content of 'harnesses' table ---")
             cursor.execute("SELECT * FROM harnesses;")
             rows = cursor.fetchall()
-            
+
             if not rows:
                 print("RESULT: 'harnesses' table is empty.")
             else:

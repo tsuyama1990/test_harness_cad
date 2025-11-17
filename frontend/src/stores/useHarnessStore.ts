@@ -24,6 +24,7 @@ export interface HarnessState {
   onEdgesChange: OnEdgesChange;
   onConnect: OnConnect;
   updateNodeData: (nodeId: string, data: Record<string, unknown>) => void;
+  updateEdgeData: (edgeId: string, data: Record<string, unknown>) => void;
   setInitialData: (nodes: Node[], edges: Edge[]) => void;
 }
 
@@ -64,6 +65,14 @@ const useHarnessStore = create<HarnessState>()(
           const nodeToUpdate = state.nodes.find((node) => node.id === nodeId);
           if (nodeToUpdate) {
             nodeToUpdate.data = { ...nodeToUpdate.data, ...data };
+          }
+        });
+      },
+      updateEdgeData: (edgeId: string, data: Record<string, unknown>) => {
+        set((state) => {
+          const edgeToUpdate = state.edges.find((edge) => edge.id === edgeId);
+          if (edgeToUpdate) {
+            edgeToUpdate.data = { ...edgeToUpdate.data, ...data };
           }
         });
       },
