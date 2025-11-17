@@ -47,7 +47,7 @@ def upgrade():
     Seed the database with initial data for E2E testing.
     Creates one harness with two connectors.
     """
-    harness_id = "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+    harness_id = "0a9eb930-c504-4835-a281-3e5c1800e1d1"
     conn1_id = str(uuid.uuid4())
     conn2_id = str(uuid.uuid4())
 
@@ -96,7 +96,7 @@ def downgrade():
     """
     Remove the seeded E2E test data.
     """
-    harness_id = "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+    harness_id = "0a9eb930-c504-4835-a281-3e5c1800e1d1"
 
     # The connection object is not available in downgrade, so we use raw SQL.
     # The order of deletion is important to avoid foreign key violations.
