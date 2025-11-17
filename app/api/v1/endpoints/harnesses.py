@@ -1,14 +1,21 @@
 import csv
+import csv
 import io
+import os
+import shutil
+from pathlib import Path
+from tempfile import NamedTemporaryFile
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, File, HTTPException, Response, UploadFile
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from app import models, schemas
 from app.api import deps
 from app.exceptions import HarnessNotFoundException, InvalidHarnessDataException
 from app.services import harness_service, validation_service
+from app.services.dxf_exporter import DxfExporter
 
 router = APIRouter()
 
@@ -164,9 +171,7 @@ def get_fromto(
     return harness_service.generate_fromto(db_harness=harness)
 
 
-@router.get(
-    "/{harness_id}/validate", response_model=list[schemas.ValidationError]
-)
+@router.get("/{harness_id}/validate", response_model=list[schemas.ValidationError])
 def validate_harness(
     *,
     db: Session = Depends(deps.get_db),
@@ -181,7 +186,8 @@ def validate_harness(
         raise HTTPException(status_code=404, detail="Harness not found")
 
     # This assumes the harness is part of a project and settings are available.
-    # In a real app, you might need a more robust way to get from harness to project settings.
+    # In a real app, you might need a more robust way to get from harness to
+    # project settings.
     harness_design = (
         db.query(models.HarnessDesign)
         .filter(models.HarnessDesign.harness_id == harness_id)
@@ -254,3 +260,136 @@ def export_procurement_csv(
             "Content-Disposition": f"attachment; filename=bom_harness_{harness_id}.csv"
         },
     )
+
+
+UPLOAD_DIR = Path("uploads")
+UPLOAD_DIR.mkdir(exist_ok=True)
+
+
+@router.post("/{harness_id}/3d-model")
+def upload_3d_model(
+    *,
+    db: Session = Depends(deps.get_db),
+    harness_id: UUID,
+    file: UploadFile = File(...),
+):
+    """
+    Upload a 3D model for the harness.
+    """
+    # Validate file extension
+    allowed_extensions = {".glb", ".gltf", ".obj"}
+    file_extension = Path(file.filename).suffix.lower()
+    if file_extension not in allowed_extensions:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Invalid file type. Allowed extensions are: "
+                f"{', '.join(allowed_extensions)}"
+            ),
+        )
+
+    try:
+        harness = harness_service.get_harness(db=db, harness_id=harness_id)
+    except HarnessNotFoundException:
+        raise HTTPException(status_code=404, detail="Harness not found")
+
+    # Sanitize filename
+    filename = f"{harness_id}_{Path(file.filename).name}"
+    file_path = UPLOAD_DIR / filename
+    with file_path.open("wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    # Update the harness with the URL
+    file_url = f"/api/v1/harnesses/uploads/{filename}"
+    harness.three_d_model_path = file_url
+    db.commit()
+
+    return {"message": "3D model uploaded successfully", "file_path": file_url}
+
+
+@router.get("/uploads/{filename}")
+def get_uploaded_file(filename: str):
+    """
+    Serve an uploaded file.
+    """
+    file_path = UPLOAD_DIR / filename
+    if not os.path.abspath(file_path).startswith(os.path.abspath(UPLOAD_DIR)):
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    if not file_path.is_file():
+        raise HTTPException(status_code=404, detail="File not found")
+    return FileResponse(file_path)
+
+
+@router.put("/{harness_id}/wires/{wire_id}/3d-path", response_model=schemas.Wire)
+def update_wire_3d_path(
+    *,
+    db: Session = Depends(deps.get_db),
+    harness_id: UUID,
+    wire_id: UUID,
+    path_in: schemas.Path3D,
+    manufacturing_margin: float = 1.0,
+):
+    """
+    Update the 3D path and calculate the length for a specific wire in a harness.
+    """
+    try:
+        wire = harness_service.get_wire(db=db, harness_id=harness_id, wire_id=wire_id)
+    except HarnessNotFoundException:
+        raise HTTPException(status_code=404, detail="Wire not found in this harness")
+
+    wire.path_3d = [p.dict() for p in path_in.points]
+
+    # Calculate length
+    length = 0.0
+    for i in range(len(path_in.points) - 1):
+        p1 = path_in.points[i]
+        p2 = path_in.points[i + 1]
+        length += ((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2 + (p2.z - p1.z) ** 2) ** 0.5
+    wire.length = length * manufacturing_margin
+
+    db.commit()
+    db.refresh(wire)
+
+    return wire
+
+
+@router.get("/{harness_id}/jig-dxf")
+def get_jig_dxf(
+    *,
+    db: Session = Depends(deps.get_db),
+    harness_id: UUID,
+    scale: float = 1.0,
+):
+    """
+    Generate a DXF file for a manufacturing jig.
+    """
+    try:
+        # Assuming the 2D layout is stored in a HarnessDesign model
+        design = (
+            db.query(models.HarnessDesign)
+            .filter(models.HarnessDesign.harness_id == harness_id)
+            .first()
+        )
+        if not design:
+            raise HTTPException(status_code=404, detail="Harness design data not found")
+
+        harness_design = schemas.HarnessDesign.model_validate(design.design_data)
+
+    except HarnessNotFoundException:
+        raise HTTPException(status_code=404, detail="Harness not found")
+
+    exporter = DxfExporter(scale=scale)
+    dxf_doc = exporter.export_harness_design(harness_design)
+
+    # Save to a temporary file and stream the response
+    with NamedTemporaryFile(delete=False, suffix=".dxf") as tmpfile:
+        dxf_doc.saveas(tmpfile.name)
+        tmpfile.seek(0)
+        return Response(
+            content=tmpfile.read(),
+            media_type="application/vnd.dxf",
+            headers={
+                "Content-Disposition": f"attachment; filename=jig_{harness_id}.dxf"
+            },
+        )

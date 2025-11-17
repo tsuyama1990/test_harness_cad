@@ -26,6 +26,13 @@ export interface HarnessState {
   updateNodeData: (nodeId: string, data: Record<string, unknown>) => void;
   updateEdgeData: (edgeId: string, data: Record<string, unknown>) => void;
   setInitialData: (nodes: Node[], edges: Edge[]) => void;
+  viewMode: '2D' | '3D';
+  setViewMode: (mode: '2D' | '3D') => void;
+  updateWireLength: (edgeId: string, length: number) => void;
+  selectedEdgeId: string | null;
+  setSelectedEdgeId: (edgeId: string | null) => void;
+  manufacturingMargin: number;
+  setManufacturingMargin: (margin: number) => void;
 }
 
 const useHarnessStore = create<HarnessState>()(
@@ -34,6 +41,12 @@ const useHarnessStore = create<HarnessState>()(
       nodes: [],
       edges: [],
       harnessId: null,
+      viewMode: '2D',
+      selectedEdgeId: null,
+      manufacturingMargin: 1.05, // 5%
+      setManufacturingMargin: (margin: number) => set({ manufacturingMargin: margin }),
+      setSelectedEdgeId: (edgeId: string | null) => set({ selectedEdgeId: edgeId }),
+      setViewMode: (mode: '2D' | '3D') => set({ viewMode: mode }),
       setHarnessId: (id: string) => set({ harnessId: id }),
       setNodes: (nodes: Node[]) => set({ nodes }),
       setEdges: (edges: Edge[]) => set({ edges }),
@@ -80,6 +93,14 @@ const useHarnessStore = create<HarnessState>()(
         set({
           nodes: nodes,
           edges: edges,
+        });
+      },
+      updateWireLength: (edgeId: string, length: number) => {
+        set((state) => {
+          const edgeToUpdate = state.edges.find((edge) => edge.id === edgeId);
+          if (edgeToUpdate && edgeToUpdate.data) {
+            edgeToUpdate.data.length = length;
+          }
         });
       },
     })

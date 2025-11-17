@@ -41,40 +41,56 @@ const Sidebar: React.FC = () => {
             {component.name}
           </div>
         ))}
-      <h3>Exports</h3>
-      <button
-        onClick={() =>
-          window.open(
-            `${API_BASE_URL}/harnesses/${harnessId}/strip-list`,
-            '_blank'
-          )
-        }
-        disabled={!harnessId}
-      >
-        Export Strip List (CSV)
-      </button>
-      <button
-        onClick={() =>
-          window.open(
-            `${API_BASE_URL}/harnesses/${harnessId}/mark-tube-list`,
-            '_blank'
-          )
-        }
-        disabled={!harnessId}
-      >
-        Export Mark Tube List (CSV)
-      </button>
-      <button
-        onClick={() =>
-          window.open(
-            `${API_BASE_URL}/harnesses/${harnessId}/formboard-pdf`,
-            '_blank'
-          )
-        }
-        disabled={!harnessId}
-      >
-        Export Formboard (PDF)
-      </button>
+      <div className="sidebar-section">
+        <h3>Exports</h3>
+        <button
+          onClick={() =>
+            window.open(
+              `${API_BASE_URL}/harnesses/${harnessId}/strip-list`,
+              '_blank'
+            )
+          }
+          disabled={!harnessId}
+        >
+          Export Strip List (CSV)
+        </button>
+        <button
+          onClick={() =>
+            window.open(
+              `${API_BASE_URL}/harnesses/${harnessId}/mark-tube-list`,
+              '_blank'
+            )
+          }
+          disabled={!harnessId}
+        >
+          Export Mark Tube List (CSV)
+        </button>
+        <button
+          onClick={() =>
+            window.open(
+              `${API_BASE_URL}/harnesses/${harnessId}/formboard-pdf`,
+              '_blank'
+            )
+          }
+          disabled={!harnessId}
+        >
+          Export Formboard (PDF)
+        </button>
+        <button
+          onClick={() => {
+            const scale = prompt('Enter scale factor:', '1.0');
+            if (scale) {
+              window.open(
+                `${API_BASE_URL}/harnesses/${harnessId}/jig-dxf?scale=${scale}`,
+                '_blank'
+              );
+            }
+          }}
+          disabled={!harnessId}
+        >
+          Export Jig (DXF)
+        </button>
+      </div>
     </aside>
   );
 };

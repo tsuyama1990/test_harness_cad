@@ -7,7 +7,7 @@ This service simulates an external catalog API (like MISUMI) to fetch technical
 specifications for components based on their part number.
 """
 
-from typing import Any, Dict, TypedDict
+from typing import Dict, TypedDict
 
 
 class PinData(TypedDict):
@@ -25,7 +25,8 @@ class ComponentSpec(TypedDict):
 
 
 # Mock database for component specifications.
-# In a real-world scenario, this would be fetched from an external API or a dedicated database.
+# In a real-world scenario, this would be fetched from an external API or a
+# dedicated database.
 MOCK_CATALOG_DB: Dict[str, ComponentSpec] = {
     # Connectors
     "DF13-3S-1.25C": {

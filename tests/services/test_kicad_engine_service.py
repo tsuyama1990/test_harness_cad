@@ -2,20 +2,32 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from app.schemas.harness_design import DesignData, Edge, Node
+from app.schemas.harness_design import HarnessDesign, Node, NodeData
 from app.services.kicad_engine_service import KiCadEngineService
 
 
 @pytest.fixture
-def dummy_design_data() -> DesignData:
-    """Provides a dummy DesignData object for testing."""
-    return DesignData(
+def dummy_design_data() -> HarnessDesign:
+    """Provides a dummy HarnessDesign object for testing."""
+    return HarnessDesign(
         nodes=[
-            Node(id="1", type="connector", position={}, data={}),
-            Node(id="2", type="resistor", position={}, data={}),
-            Node(id="3", type="connector", position={}, data={}),
+            Node(
+                id="1",
+                type="connector",
+                position={},
+                data=NodeData(id="1", label="CONN1"),
+            ),
+            Node(
+                id="2", type="resistor", position={}, data=NodeData(id="2", label="R1")
+            ),
+            Node(
+                id="3",
+                type="connector",
+                position={},
+                data=NodeData(id="3", label="CONN2"),
+            ),
         ],
-        edges=[Edge(id="e1-2", source="1", target="2")],
+        edges=[],
     )
 
 

@@ -28,7 +28,11 @@ class ValidationService:
                     ValidationError(
                         component_id=str(connector.id),
                         component_type="Connector",
-                        message=f"Connector {connector.logical_id} ({connector.part_number}) has missing technical specifications.",
+                        message=(
+                            f"Connector {connector.logical_id} "
+                            f"({connector.part_number}) has missing "
+                            "technical specifications."
+                        ),
                         error_type="DataQualityError",
                     )
                 )
@@ -47,7 +51,10 @@ class ValidationService:
                     ValidationError(
                         component_id=str(wire.id),
                         component_type="Wire",
-                        message=f"Wire {wire.logical_id} ({wire.part_number}) has missing technical specifications.",
+                        message=(
+                            f"Wire {wire.logical_id} ({wire.part_number}) has "
+                            "missing technical specifications."
+                        ),
                         error_type="DataQualityError",
                     )
                 )
@@ -63,7 +70,11 @@ class ValidationService:
                         ValidationError(
                             component_id=str(connector.id),
                             component_type="Connector",
-                            message=f"Connector {connector.logical_id} voltage rating ({connector.voltage_rating}V) is less than system voltage ({settings.system_voltage}V).",
+                            message=(
+                                f"Connector {connector.logical_id} voltage rating "
+                                f"({connector.voltage_rating}V) is less than "
+                                f"system voltage ({settings.system_voltage}V)."
+                            ),
                             error_type="ElectricalError",
                         )
                     )
@@ -76,7 +87,11 @@ class ValidationService:
                         ValidationError(
                             component_id=str(wire.id),
                             component_type="Wire",
-                            message=f"Wire {wire.logical_id} voltage rating ({wire.voltage_rating}V) is less than system voltage ({settings.system_voltage}V).",
+                            message=(
+                                f"Wire {wire.logical_id} voltage rating "
+                                f"({wire.voltage_rating}V) is less than system "
+                                f"voltage ({settings.system_voltage}V)."
+                            ),
                             error_type="ElectricalError",
                         )
                     )
@@ -89,7 +104,11 @@ class ValidationService:
                         ValidationError(
                             component_id=str(component.id),
                             component_type=type(component).__name__,
-                            message=f"Component {component.logical_id} ({component.part_number}) is not RoHS compliant.",
+                            message=(
+                                f"Component {component.logical_id} "
+                                f"({component.part_number}) is not RoHS "
+                                "compliant."
+                            ),
                             error_type="ComplianceError",
                         )
                     )
@@ -102,14 +121,19 @@ class ValidationService:
             if (
                 wire.outer_diameter is not None
                 and from_connector.applicable_wire_max_diameter is not None
-                and wire.outer_diameter
-                > from_connector.applicable_wire_max_diameter
+                and wire.outer_diameter > from_connector.applicable_wire_max_diameter
             ):
                 errors.append(
                     ValidationError(
                         component_id=str(connection.id),
                         component_type="Connection",
-                        message=f"Wire {wire.logical_id} ({wire.outer_diameter}mm) exceeds max diameter for connector {from_connector.logical_id} ({from_connector.applicable_wire_max_diameter}mm).",
+                        message=(
+                            f"Wire {wire.logical_id} diameter "
+                            f"({wire.outer_diameter}mm) exceeds max "
+                            f"diameter for connector "
+                            f"{from_connector.logical_id} "
+                            f"({from_connector.applicable_wire_max_diameter}mm)."
+                        ),
                         error_type="PhysicalError",
                     )
                 )

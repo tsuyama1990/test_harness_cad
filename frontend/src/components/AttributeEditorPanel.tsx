@@ -44,11 +44,20 @@ const AttributeEditorPanel: React.FC = () => {
     </div>
   );
 
-  const renderEdgeEditor = (edge: Edge) => (
-    <div>
-      <h4>Wire Attributes</h4>
-      <form>
-        <label>Wire ID:</label>
+  const renderEdgeEditor = (edge: Edge) => {
+    const { setViewMode, setSelectedEdgeId } = useHarnessStore();
+
+    const handleMeasureClick = () => {
+      setSelectedEdgeId(edge.id);
+      setViewMode('3D');
+    };
+
+    return (
+      <div>
+        <h4>Wire Attributes</h4>
+        <button onClick={handleMeasureClick}>Measure</button>
+        <form>
+          <label>Wire ID:</label>
         <input type="text" value={edge.data.wire_id || ''} readOnly />
         <label>Color:</label>
         <input

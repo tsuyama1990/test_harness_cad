@@ -7,7 +7,7 @@ import ezdxf
 from ezdxf.document import Drawing
 from sqlalchemy.orm import Session
 
-from app import models, schemas
+from app import models
 from app.services.catalog import CatalogService, catalog_service
 
 
