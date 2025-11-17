@@ -21,7 +21,7 @@ jobs:
         run: pip install uv
 
       - name: Install dependencies with uv
-        run: uv sync
+        run: uv pip install -e .[dev]
 
       - name: Lint with ruff
         run: uv run ruff check .
@@ -58,7 +58,7 @@ jobs:
         run: pip install uv
 
       - name: Install Python dependencies
-        run: uv sync
+        run: uv pip install -e .[dev]
 
       - name: Install Node.js dependencies
         working-directory: ./frontend

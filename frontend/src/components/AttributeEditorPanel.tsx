@@ -1,5 +1,5 @@
 import React from 'react';
-import { useStore } from 'reactflow';
+import { useStore, type Node, type Edge } from 'reactflow';
 import useHarnessStore from '../stores/useHarnessStore';
 
 const AttributeEditorPanel: React.FC = () => {
@@ -18,7 +18,7 @@ const AttributeEditorPanel: React.FC = () => {
       ? selectedEdges[0]
       : null;
 
-  const renderNodeEditor = (node: any) => (
+  const renderNodeEditor = (node: Node) => (
     <div>
       <h4>Connector Attributes</h4>
       <form>
@@ -44,7 +44,7 @@ const AttributeEditorPanel: React.FC = () => {
     </div>
   );
 
-  const renderEdgeEditor = (edge: any) => (
+  const renderEdgeEditor = (edge: Edge) => (
     <div>
       <h4>Wire Attributes</h4>
       <form>
