@@ -1,12 +1,14 @@
+import csv
+import io
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 
-from app import schemas
+from app import models, schemas
 from app.api import deps
 from app.exceptions import HarnessNotFoundException, InvalidHarnessDataException
-from app.services import harness_service
+from app.services import harness_service, validation_service
 
 router = APIRouter()
 
@@ -160,3 +162,95 @@ def get_fromto(
         raise HTTPException(status_code=404, detail="Harness not found")
 
     return harness_service.generate_fromto(db_harness=harness)
+
+
+@router.get(
+    "/{harness_id}/validate", response_model=list[schemas.ValidationError]
+)
+def validate_harness(
+    *,
+    db: Session = Depends(deps.get_db),
+    harness_id: UUID,
+):
+    """
+    Validate the harness against project settings.
+    """
+    try:
+        harness = harness_service.get_harness(db=db, harness_id=harness_id)
+    except HarnessNotFoundException:
+        raise HTTPException(status_code=404, detail="Harness not found")
+
+    # This assumes the harness is part of a project and settings are available.
+    # In a real app, you might need a more robust way to get from harness to project settings.
+    harness_design = (
+        db.query(models.HarnessDesign)
+        .filter(models.HarnessDesign.harness_id == harness_id)
+        .first()
+    )
+    if not harness_design or not harness_design.project.settings:
+        raise HTTPException(
+            status_code=400, detail="Project settings not found for this harness."
+        )
+
+    errors = validation_service.validate_harness(
+        db=db, harness=harness, settings=harness_design.project.settings
+    )
+    return errors
+
+
+@router.get("/{harness_id}/procurement/export-csv")
+def export_procurement_csv(
+    *,
+    db: Session = Depends(deps.get_db),
+    harness_id: UUID,
+):
+    """
+    Export the Bill of Materials (BOM) as a CSV file for procurement.
+    The export is blocked if validation fails.
+    """
+    try:
+        harness = harness_service.get_harness(db=db, harness_id=harness_id)
+    except HarnessNotFoundException:
+        raise HTTPException(status_code=404, detail="Harness not found")
+
+    harness_design = (
+        db.query(models.HarnessDesign)
+        .filter(models.HarnessDesign.harness_id == harness_id)
+        .first()
+    )
+    if not harness_design or not harness_design.project.settings:
+        raise HTTPException(
+            status_code=400, detail="Project settings not found for this harness."
+        )
+
+    # First, run validation
+    errors = validation_service.validate_harness(
+        db=db, harness=harness, settings=harness_design.project.settings
+    )
+    if errors:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "message": "Validation failed. Cannot export procurement data.",
+                "errors": [e.dict() for e in errors],
+            },
+        )
+
+    # If validation passes, generate BOM and CSV
+    bom = harness_service.generate_bom(db_harness=harness)
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["Part Number", "Manufacturer", "Quantity"])
+    for item in bom.connectors:
+        writer.writerow([item.part_number, item.manufacturer, item.quantity])
+    for item in bom.wires:
+        writer.writerow([item.part_number, item.manufacturer, item.quantity])
+
+    output.seek(0)
+    return Response(
+        content=output.getvalue(),
+        media_type="text/csv",
+        headers={
+            "Content-Disposition": f"attachment; filename=bom_harness_{harness_id}.csv"
+        },
+    )

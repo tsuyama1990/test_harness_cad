@@ -1,4 +1,5 @@
-from pydantic import BaseModel
+# app/schemas/project.py
+from pydantic import BaseModel, ConfigDict
 
 
 class ProjectBase(BaseModel):
@@ -12,5 +13,21 @@ class ProjectCreate(ProjectBase):
 class Project(ProjectBase):
     id: int
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ProjectSettingsBase(BaseModel):
+    system_voltage: float | None = None
+    require_rohs: bool = False
+    require_ul: bool = False
+
+
+class ProjectSettingsCreate(ProjectSettingsBase):
+    pass
+
+
+class ProjectSettings(ProjectSettingsBase):
+    id: int
+    project_id: int
+
+    model_config = ConfigDict(from_attributes=True)

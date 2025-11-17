@@ -1,77 +1,82 @@
-from typing import cast
-
+# app/api/v1/endpoints/projects.py
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app import models, schemas
 from app.api import deps
-from app.models.harness_design import HarnessDesign
-from app.models.project import Project
-from app.schemas import harness_design as harness_design_schema
-from app.schemas import project as project_schema
+from app.exceptions import ProjectNotFoundException
 
 router = APIRouter()
 
 
-@router.post("/", response_model=project_schema.Project)
+@router.post("/", response_model=schemas.Project)
 def create_project(
     *,
     db: Session = Depends(deps.get_db),
-    project_in: project_schema.ProjectCreate,
-) -> project_schema.Project:
+    project_in: schemas.ProjectCreate,
+):
     """
-    Create a new project.
+    Create new project.
     """
-    project = db.query(Project).filter(Project.name == project_in.name).first()
-    if project:
-        raise HTTPException(
-            status_code=400,
-            detail="A project with this name already exists.",
-        )
-    db_project = Project()
-    db_project.name = project_in.name
-    db.add(db_project)
+    project = models.Project(name=project_in.name)
+    db.add(project)
     db.commit()
-    db.refresh(db_project)
-    return db_project
+    db.refresh(project)
+    return project
 
 
-@router.get("/{project_id}", response_model=project_schema.Project)
-def get_project(
+@router.post("/{project_id}/save", response_model=schemas.HarnessDesignSaveResponse)
+def save_design(
     *,
     db: Session = Depends(deps.get_db),
     project_id: int,
-) -> project_schema.Project:
+    design_in: schemas.DesignSave,
+):
     """
-    Get a project by its ID.
+    Save a harness design.
     """
-    project = db.query(Project).filter(Project.id == project_id).first()
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
-    return cast(Project, project)
+    # In a real app, you'd have a more robust way of handling designs
+    # For now, we'll just create a new harness design every time
+    harness = models.Harness(name="New Harness")
+    db.add(harness)
+    db.commit()
+    db.refresh(harness)
 
-
-@router.post(
-    "/{project_id}/save", response_model=harness_design_schema.HarnessDesignSaveResponse
-)
-def save_harness_design(
-    *,
-    db: Session = Depends(deps.get_db),  # type: ignore[no-any-return]
-    project_id: int,
-    design_in: harness_design_schema.DesignSave,
-) -> harness_design_schema.HarnessDesignSaveResponse:
-    """
-    Save a new harness design for a project.
-    """
-    project = db.query(Project).filter(Project.id == project_id).first()
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
-
-    harness_design = HarnessDesign()
-    harness_design.project_id = project_id
-    harness_design.design_data = design_in.design_data.model_dump()
+    harness_design = models.HarnessDesign(
+        project_id=project_id,
+        harness_id=harness.id,
+        design_data=design_in.design_data.model_dump(),
+    )
     db.add(harness_design)
     db.commit()
     db.refresh(harness_design)
-    return harness_design_schema.HarnessDesignSaveResponse(
-        status="success", harness_design_id=harness_design.id
-    )
+    return {"status": "success", "harness_design_id": harness_design.id}
+
+
+@router.post("/{project_id}/settings", response_model=schemas.ProjectSettings)
+def update_project_settings(
+    *,
+    db: Session = Depends(deps.get_db),
+    project_id: int,
+    settings_in: schemas.ProjectSettingsCreate,
+):
+    """
+    Create or update project settings.
+    """
+    project = db.query(models.Project).filter(models.Project.id == project_id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    if project.settings:
+        # Update existing settings
+        project.settings.system_voltage = settings_in.system_voltage
+        project.settings.require_rohs = settings_in.require_rohs
+        project.settings.require_ul = settings_in.require_ul
+    else:
+        # Create new settings
+        project.settings = models.ProjectSettings(**settings_in.model_dump())
+
+    db.add(project.settings)
+    db.commit()
+    db.refresh(project.settings)
+    return project.settings

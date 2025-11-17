@@ -4,11 +4,13 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import JSON, DateTime, ForeignKey, Integer
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
 
 if TYPE_CHECKING:
+    from app.models.harness import Harness
     from app.models.project import Project
 
 
@@ -17,9 +19,11 @@ class HarnessDesign(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     project_id: Mapped[int] = mapped_column(Integer, ForeignKey("projects.id"))
+    harness_id: Mapped[int] = mapped_column(UUID(as_uuid=True), ForeignKey("harnesses.id"))
     design_data: Mapped[dict[str, Any]] = mapped_column(JSON)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     project: Mapped["Project"] = relationship(
         "Project", back_populates="harness_designs"
     )
+    harness: Mapped["Harness"] = relationship("Harness")
