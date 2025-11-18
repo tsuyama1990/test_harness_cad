@@ -161,14 +161,7 @@ class HarnessService:
         db.commit()
         db.refresh(db_harness)
         return db_harness
-
-    import logging
-
-# ... (rest of the imports)
-
-class HarnessService:
-    # ... (other methods)
-
+    
     def get_harness(self, db: Session, harness_id: UUID) -> models.Harness:
         db_harness = (
             db.query(models.Harness)
@@ -192,9 +185,6 @@ class HarnessService:
         if not db_harness:
             raise HarnessNotFoundException()
         return db_harness  # type: ignore
-
-    # ... (rest of the methods)
-
 
     def get_wire(self, db: Session, harness_id: UUID, wire_id: UUID) -> models.Wire:
         """Retrieves a single wire from a specific harness."""

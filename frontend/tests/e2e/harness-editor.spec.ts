@@ -42,12 +42,9 @@ test.describe('Harness Editor E2E Tests', () => {
     // Note: The data-testid for handles might need to be adjusted if the real data is different.
     // Assuming the real component data also creates pins with IDs '1' and '2'.
     const handleSource = page.getByTestId('handle-source-CONN1-1');
-    const handleTarget = page.getByTestId('handle-target-CONN2-A');
+    const handleTarget = page.getByTestId('handle-target-CONN2-1');
 
-    await handleSource.hover();
-    await page.mouse.down();
-    await handleTarget.hover();
-    await page.mouse.up();
+    await handleSource.dragTo(handleTarget);
 
     // Verify edge is created
     await expect(page.locator('.react-flow__edge')).toHaveCount(1);
