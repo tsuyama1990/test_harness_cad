@@ -1,45 +1,65 @@
-from unittest.mock import MagicMock
+import tempfile
 
 from fastapi.testclient import TestClient
 
-from app.api.deps import get_kicad_engine
-from app.main import app
 
-
-def test_full_save_and_export_flow(client: TestClient, mock_kicad_engine: MagicMock):
+def test_create_project(client: TestClient):
     """
-    Test the full flow of creating a project, saving a design,
-    and exporting a DXF.
+    Test creating a project.
     """
-    # Override the dependency with the mock
-    app.dependency_overrides[get_kicad_engine] = lambda: mock_kicad_engine
+    project_name = "Test Project"
+    response = client.post("/api/v1/projects/", json={"name": project_name})
+    assert response.status_code == 200
+    project_data = response.json()
+    assert project_data["name"] == project_name
 
-    # 1. Create a project
+
+def test_3d_model_upload_and_dxf_export(client: TestClient):
+    """
+    Test uploading a 3D model and exporting a DXF file.
+    """
+    # 1. Create a harness
+    harness_name = "Test Harness"
+    response = client.post(
+        "/api/v1/harnesses/",
+        json={
+            "name": harness_name,
+            "connectors": [],
+            "wires": [],
+            "connections": [],
+        },
+    )
+    assert response.status_code == 200
+    harness_data = response.json()
+    harness_id = harness_data["id"]
+
+    # 2. Create a project and save a design
     project_name = "Test Project"
     response = client.post("/api/v1/projects/", json={"name": project_name})
     assert response.status_code == 200
     project_data = response.json()
     project_id = project_data["id"]
-    assert project_data["name"] == project_name
 
-    # 2. Save a design
-    design_data = {
+    design_data: dict = {
         "design_data": {
-            "nodes": [{"id": "1", "type": "connector", "position": {}, "data": {}}],
+            "nodes": [],
             "edges": [],
         }
     }
     response = client.post(f"/api/v1/projects/{project_id}/save", json=design_data)
     assert response.status_code == 200
 
-    # 3. Export DXF
-    # response = client.get(f"/api/v1/projects/{project_id}/export/dxf")
-    # assert response.status_code == 200
-    # assert response.headers["content-type"] == "application/dxf"
+    # 3. Upload a 3D model
+    with tempfile.NamedTemporaryFile(suffix=".glb") as tmp:
+        tmp.write(b"test")
+        tmp.seek(0)
+        response = client.post(
+            f"/api/v1/harnesses/{harness_id}/3d-model",
+            files={"file": (tmp.name, tmp, "model/gltf-binary")},
+        )
+    assert response.status_code == 200
 
-    # 4. Assert that the mock engine was called correctly
-    # mock_kicad_engine.generate_sch_from_json.assert_called_once()
-    # mock_kicad_engine.export_dxf.assert_called_once()
-
-    # Clean up the override
-    del app.dependency_overrides[get_kicad_engine]
+    # 3. Export a DXF
+    response = client.get(f"/api/v1/harnesses/{harness_id}/jig-dxf")
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "application/vnd.dxf"

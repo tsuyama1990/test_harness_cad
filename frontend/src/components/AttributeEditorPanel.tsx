@@ -3,7 +3,7 @@ import { useStore, type Node, type Edge } from 'reactflow';
 import useHarnessStore from '../stores/useHarnessStore';
 
 const AttributeEditorPanel: React.FC = () => {
-  const { updateNodeData, updateEdgeData } = useHarnessStore();
+  const { updateNodeData, updateEdgeData, setViewMode, setSelectedEdgeId } = useHarnessStore();
   const selectedNodes = useStore((store) =>
     Array.from(store.nodeInternals.values()).filter((node) => node.selected)
   );
@@ -44,11 +44,22 @@ const AttributeEditorPanel: React.FC = () => {
     </div>
   );
 
-  const renderEdgeEditor = (edge: Edge) => (
-    <div>
-      <h4>Wire Attributes</h4>
-      <form>
-        <label>Wire ID:</label>
+  const renderEdgeEditor = (
+    edge: Edge,
+    setViewMode: (mode: '2D' | '3D') => void,
+    setSelectedEdgeId: (edgeId: string | null) => void
+  ) => {
+    const handleMeasureClick = () => {
+      setSelectedEdgeId(edge.id);
+      setViewMode('3D');
+    };
+
+    return (
+      <div>
+        <h4>Wire Attributes</h4>
+        <button onClick={handleMeasureClick}>Measure</button>
+        <form>
+          <label>Wire ID:</label>
         <input type="text" value={edge.data.wire_id || ''} readOnly />
         <label>Color:</label>
         <input
@@ -106,7 +117,8 @@ const AttributeEditorPanel: React.FC = () => {
         />
       </form>
     </div>
-  );
+    );
+  };
 
   return (
     <aside className="attribute-editor-panel">
@@ -114,7 +126,7 @@ const AttributeEditorPanel: React.FC = () => {
       {selectedElement
         ? 'position' in selectedElement // Check if it's a Node
           ? renderNodeEditor(selectedElement)
-          : renderEdgeEditor(selectedElement)
+          : renderEdgeEditor(selectedElement, setViewMode, setSelectedEdgeId)
         : 'Select an element to edit its attributes.'}
     </aside>
   );

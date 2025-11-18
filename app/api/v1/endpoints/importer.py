@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
-from app import models, schemas
+from app import schemas
 from app.api import deps
 from app.services.importer import importer_service
 
@@ -20,7 +20,9 @@ def import_dxf(
     Import a DXF file to create a new harness with connectors.
     """
     if not dxf_file.filename.lower().endswith(".dxf"):
-        raise HTTPException(status_code=400, detail="Invalid file type. Please upload a .dxf file.")
+        raise HTTPException(
+            status_code=400, detail="Invalid file type. Please upload a .dxf file."
+        )
 
     try:
         harness = importer_service.import_dxf(

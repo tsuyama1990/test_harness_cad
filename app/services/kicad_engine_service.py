@@ -4,7 +4,7 @@ from pathlib import Path
 
 import kicad_sch_api as ksa
 
-from app.schemas.harness_design import DesignData
+from app.schemas.harness_design import HarnessDesign
 
 
 class KiCadEngineService:
@@ -21,7 +21,7 @@ class KiCadEngineService:
         """
         self.cli_path = cli_path
 
-    def generate_sch_from_json(self, design_data: DesignData) -> str:
+    def generate_sch_from_json(self, design_data: HarnessDesign) -> str:
         """
         Generates a KiCad schematic file from JSON design data.
 

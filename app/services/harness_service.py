@@ -186,6 +186,17 @@ class HarnessService:
             raise HarnessNotFoundException()
         return db_harness  # type: ignore
 
+    def get_wire(self, db: Session, harness_id: UUID, wire_id: UUID) -> models.Wire:
+        """Retrieves a single wire from a specific harness."""
+        wire: models.Wire | None = (
+            db.query(models.Wire)
+            .filter(models.Wire.harness_id == harness_id, models.Wire.id == wire_id)
+            .first()
+        )
+        if not wire:
+            raise HarnessNotFoundException("Wire not found in this harness")
+        return wire
+
     def generate_bom(self, db_harness: models.Harness) -> schemas.BomResponse:
         connector_bom = {}
         for conn in db_harness.connectors:

@@ -114,3 +114,26 @@ class FromToItem(BaseModel):
 
 class FromToResponse(BaseModel):
     items: list[FromToItem]
+
+
+# --- 3D Schemas ---
+
+
+class Point3D(BaseModel):
+    x: float
+    y: float
+    z: float
+
+
+class Path3D(BaseModel):
+    points: list[Point3D]
+
+
+class WireLength(BaseModel):
+    length: float
+
+
+class Wire(WireCreate):
+    id: str
+
+    model_config = ConfigDict(from_attributes=True)

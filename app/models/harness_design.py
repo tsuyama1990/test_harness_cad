@@ -19,7 +19,9 @@ class HarnessDesign(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     project_id: Mapped[int] = mapped_column(Integer, ForeignKey("projects.id"))
-    harness_id: Mapped[int] = mapped_column(UUID(as_uuid=True), ForeignKey("harnesses.id"))
+    harness_id: Mapped[int] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("harnesses.id")
+    )
     design_data: Mapped[dict[str, Any]] = mapped_column(JSON)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 

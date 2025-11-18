@@ -8,8 +8,17 @@ from .harness import (
     Harness,
     HarnessCreate,
     HarnessFull,
+    Path3D,
+    Point3D,
+    Wire,
+    WireLength,
 )
-from .harness_design import DesignData, DesignSave, HarnessDesignSaveResponse
+from .harness_design import (
+    DesignData,
+    DesignSave,
+    HarnessDesign,
+    HarnessDesignSaveResponse,
+)
 from .project import Project, ProjectCreate, ProjectSettings, ProjectSettingsCreate
 from .validation import ValidationError
 
@@ -31,4 +40,9 @@ __all__ = [
     "CutlistItem",
     "FromToResponse",
     "FromToItem",
+    "HarnessDesign",
+    "Point3D",
+    "Path3D",
+    "WireLength",
+    "Wire",
 ]

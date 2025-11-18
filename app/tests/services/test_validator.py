@@ -1,11 +1,11 @@
 # app/tests/services/test_validator.py
-import uuid
 
 import pytest
 from sqlalchemy.orm import Session
 
 from app import models
 from app.services.validator import ValidationService
+
 
 # A reusable mock project settings object for tests
 @pytest.fixture
@@ -27,7 +27,9 @@ def mock_harness(db: Session) -> models.Harness:
 
 
 def test_validation_success(
-    db: Session, mock_harness: models.Harness, mock_project_settings: models.ProjectSettings
+    db: Session,
+    mock_harness: models.Harness,
+    mock_project_settings: models.ProjectSettings,
 ):
     """
     Test a harness that should pass all validation rules.
@@ -67,7 +69,9 @@ def test_validation_success(
 
 
 def test_data_quality_error(
-    db: Session, mock_harness: models.Harness, mock_project_settings: models.ProjectSettings
+    db: Session,
+    mock_harness: models.Harness,
+    mock_project_settings: models.ProjectSettings,
 ):
     """
     Test that a component with missing specs raises a DataQualityError.
@@ -91,7 +95,9 @@ def test_data_quality_error(
 
 
 def test_electrical_error(
-    db: Session, mock_harness: models.Harness, mock_project_settings: models.ProjectSettings
+    db: Session,
+    mock_harness: models.Harness,
+    mock_project_settings: models.ProjectSettings,
 ):
     """
     Test that a component with a voltage rating below the system requirement
@@ -119,7 +125,9 @@ def test_electrical_error(
 
 
 def test_compliance_error(
-    db: Session, mock_harness: models.Harness, mock_project_settings: models.ProjectSettings
+    db: Session,
+    mock_harness: models.Harness,
+    mock_project_settings: models.ProjectSettings,
 ):
     """
     Test that a non-RoHS component in a project requiring RoHS
@@ -147,7 +155,9 @@ def test_compliance_error(
 
 
 def test_physical_error(
-    db: Session, mock_harness: models.Harness, mock_project_settings: models.ProjectSettings
+    db: Session,
+    mock_harness: models.Harness,
+    mock_project_settings: models.ProjectSettings,
 ):
     """
     Test that a wire with a diameter larger than the connector's max
@@ -177,7 +187,8 @@ def test_physical_error(
         is_ul=True,
     )
     pin1 = models.Pin(logical_id="1", connector=connector)
-    pin2 = models.Pin(logical_id="2", connector=connector) # Fake second pin for connection
+    # Fake second pin for connection
+    pin2 = models.Pin(logical_id="2", connector=connector)
     db.add_all([connector, wire, pin1, pin2])
     db.commit()
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from typing import List
 
-from sqlalchemy import Boolean, Float, ForeignKey, String
+from sqlalchemy import JSON, Boolean, Float, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -17,6 +17,7 @@ class Harness(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     name: Mapped[str | None] = mapped_column(String, index=True, nullable=True)
+    three_d_model_path: Mapped[str | None] = mapped_column(String, nullable=True)
 
     connectors: Mapped[List["Connector"]] = relationship(
         "Connector", back_populates="harness", cascade="all, delete-orphan"
@@ -91,6 +92,9 @@ class Wire(Base):
     outer_diameter: Mapped[float | None] = mapped_column(Float, nullable=True)
     is_rohs: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
     is_ul: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+
+    # 3D Path
+    path_3d: Mapped[list | None] = mapped_column(JSON, nullable=True)
 
     harness: Mapped[Harness] = relationship("Harness", back_populates="wires")
 
