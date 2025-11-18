@@ -1,8 +1,20 @@
 import io
 from uuid import UUID
 
+import wireviz.wireviz
+from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.pdfgen import canvas
+from reportlab.platypus import (
+    Image,
+    PageBreak,
+    Paragraph,
+    SimpleDocTemplate,
+    Spacer,
+    Table,
+    TableStyle,
+)
 from sqlalchemy.orm import Session, joinedload
 
 from app import models, schemas
@@ -252,28 +264,116 @@ class HarnessService:
         return schemas.FromToResponse(items=items)
 
     def generate_formboard_pdf(self, db_harness: models.Harness) -> bytes:
+        wireviz_data = self._convert_to_wireviz_data(db_harness)
+        if not wireviz_data["connectors"] or not wireviz_data["cables"]:
+            return self._generate_empty_pdf(
+                "No connectors or wires found in the harness."
+            )
+
+        try:
+            # Generate the wireviz graph image in-memory
+            image_data = wireviz.wireviz.parse(
+                wireviz_data, return_types="png", output_name=db_harness.name
+            )
+            if not image_data:
+                raise ValueError("Wireviz failed to generate image data.")
+        except Exception as e:
+            # Handle cases where wireviz might fail
+            return self._generate_empty_pdf(f"Failed to generate diagram: {e}")
+
+        # Create PDF using reportlab
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        elements = []
+        styles = getSampleStyleSheet()
+
+        # Title
+        elements.append(
+            Paragraph(f"Harness Assembly: {db_harness.name}", styles["Title"])
+        )
+        elements.append(Spacer(1, 24))
+
+        # Wireviz Image
+        harness_image = Image(io.BytesIO(image_data), width=400, height=400)
+        elements.append(harness_image)
+
+        # BOM Section
+        elements.append(PageBreak())
+        elements.append(Paragraph("Bill of Materials (BOM)", styles["h2"]))
+        elements.append(Spacer(1, 12))
+
+        # BOM Data
+        bom_data = [["Part Number", "Manufacturer", "Quantity"]]
+        bom = self.generate_bom(db_harness)
+        for item in bom.connectors:
+            bom_data.append([item.part_number, item.manufacturer, str(item.quantity)])
+        for item in bom.wires:
+            bom_data.append([item.part_number, item.manufacturer, str(item.quantity)])
+
+        bom_table = Table(bom_data)
+        bom_table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                    ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+                    ("BACKGROUND", (0, 1), (-1, -1), colors.beige),
+                    ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                ]
+            )
+        )
+        elements.append(bom_table)
+
+        doc.build(elements)
+        buffer.seek(0)
+        return buffer.getvalue()
+
+    def _convert_to_wireviz_data(self, db_harness: models.Harness) -> dict:
+        """Converts a harness object to a dictionary compatible with WireViz."""
+        connectors_data = {}
+        for conn in db_harness.connectors:
+            connectors_data[conn.logical_id] = {
+                "type": conn.part_number,
+                "pincount": len(conn.pins),
+            }
+
+        cables_data = {}
+        for conn in db_harness.connections:
+            wire = conn.wire
+            from_pin = conn.from_pin
+            to_pin = conn.to_pin
+
+            # Ensure pins and connectors are loaded
+            if not (
+                wire
+                and from_pin
+                and to_pin
+                and from_pin.connector
+                and to_pin.connector
+            ):
+                continue  # Or raise an error for incomplete data
+
+            cables_data[wire.logical_id] = {
+                "gauge": f"{wire.gauge}AWG",
+                "color": wire.color,
+                "connections": [
+                    [from_pin.connector.logical_id, from_pin.logical_id],
+                    [to_pin.connector.logical_id, to_pin.logical_id],
+                ],
+            }
+
+        return {"connectors": connectors_data, "cables": cables_data}
+
+    def _generate_empty_pdf(self, message: str) -> bytes:
+        """Generates a PDF with a simple message, used for errors or empty data."""
         buffer = io.BytesIO()
         p = canvas.Canvas(buffer, pagesize=letter)
         width, height = letter
-
-        # This is a placeholder for the actual drawing logic.
-        # In a real implementation, you would iterate through the harness data
-        # and draw the connectors and wires to scale.
-        p.drawString(100, height - 100, f"Formboard for Harness: {db_harness.name}")
-
-        # Draw a simple representation of connectors
-        for i, connector in enumerate(db_harness.connectors):
-            p.drawString(
-                100, height - 150 - (i * 50), f"Connector: {connector.logical_id}"
-            )
-
-        # Draw a simple representation of wires
-        for i, wire in enumerate(db_harness.wires):
-            p.drawString(300, height - 150 - (i * 50), f"Wire: {wire.logical_id}")
-
+        p.drawString(100, height - 100, message)
         p.showPage()
         p.save()
-
         buffer.seek(0)
         return buffer.getvalue()
 
