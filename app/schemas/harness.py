@@ -134,6 +134,6 @@ class WireLength(BaseModel):
 
 
 class Wire(WireCreate):
-    id: UUID
+    id: str
 
     model_config = ConfigDict(from_attributes=True)

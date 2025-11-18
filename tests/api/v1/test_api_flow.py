@@ -1,4 +1,3 @@
-
 import tempfile
 
 from fastapi.testclient import TestClient
@@ -41,7 +40,7 @@ def test_3d_model_upload_and_dxf_export(client: TestClient):
     project_data = response.json()
     project_id = project_data["id"]
 
-    design_data = {
+    design_data: dict = {
         "design_data": {
             "nodes": [],
             "edges": [],

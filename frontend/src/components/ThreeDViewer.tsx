@@ -40,7 +40,7 @@ const PathCreator = ({ modelRef }: { modelRef: React.RefObject<THREE.Group> }) =
         setPoints([...points, intersects[0].point]);
       }
     },
-    [points, camera, modelRef]
+    [points, camera, modelRef, size]
   );
 
   const savePath = async () => {
