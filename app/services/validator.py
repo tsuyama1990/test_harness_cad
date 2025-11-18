@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app import models
 from app.schemas.validation import ValidationError
+from app.services.catalog import catalog_service
 
 
 class ValidationService:
@@ -99,7 +100,7 @@ class ValidationService:
         # Rule 3: Compliance - Check RoHS and UL standards
         if settings.require_rohs:
             for component in harness.connectors + harness.wires:
-                if not component.is_rohs:
+                if component.is_rohs is False:
                     errors.append(
                         ValidationError(
                             component_id=str(component.id),
@@ -137,6 +138,70 @@ class ValidationService:
                         error_type="PhysicalError",
                     )
                 )
+
+        # Rule 5: Terminal Compatibility
+        for conn in harness.connections:
+            wire_gauge = conn.wire.gauge
+
+            # Check terminal on side A
+            if conn.terminal_part_number_a:
+                terminal_a_spec = catalog_service.get_specification(conn.terminal_part_number_a)
+                if not terminal_a_spec:
+                    errors.append(ValidationError(
+                        component_id=str(conn.id), component_type="Connection",
+                        message=f"Terminal {conn.terminal_part_number_a} not found in catalog.",
+                        error_type="DataQualityError"
+                    ))
+                else:
+                    # 1. Wire gauge check
+                    min_gauge = terminal_a_spec.get("applicable_wire_gauge_min")
+                    max_gauge = terminal_a_spec.get("applicable_wire_gauge_max")
+                    if not (min_gauge is not None and max_gauge is not None and min_gauge <= wire_gauge <= max_gauge):
+                        errors.append(ValidationError(
+                            component_id=str(conn.id), component_type="Connection",
+                            message=f"Wire gauge AWG{wire_gauge} is not compatible with terminal {conn.terminal_part_number_a} (supports AWG{min_gauge}-{max_gauge}).",
+                            error_type="CompatibilityError"
+                        ))
+
+                    # 2. Connector series check
+                    connector_a_series = conn.from_pin.connector.part_number.split('-')[0]
+                    compatible_series = terminal_a_spec.get("compatible_connector_series")
+                    if compatible_series and connector_a_series not in compatible_series:
+                        errors.append(ValidationError(
+                            component_id=str(conn.id), component_type="Connection",
+                            message=f"Terminal {conn.terminal_part_number_a} is not compatible with connector series {connector_a_series}.",
+                            error_type="CompatibilityError"
+                        ))
+
+            # Check terminal on side B
+            if conn.terminal_part_number_b:
+                terminal_b_spec = catalog_service.get_specification(conn.terminal_part_number_b)
+                if not terminal_b_spec:
+                    errors.append(ValidationError(
+                        component_id=str(conn.id), component_type="Connection",
+                        message=f"Terminal {conn.terminal_part_number_b} not found in catalog.",
+                        error_type="DataQualityError"
+                    ))
+                else:
+                    # 1. Wire gauge check
+                    min_gauge = terminal_b_spec.get("applicable_wire_gauge_min")
+                    max_gauge = terminal_b_spec.get("applicable_wire_gauge_max")
+                    if not (min_gauge is not None and max_gauge is not None and min_gauge <= wire_gauge <= max_gauge):
+                        errors.append(ValidationError(
+                            component_id=str(conn.id), component_type="Connection",
+                            message=f"Wire gauge AWG{wire_gauge} is not compatible with terminal {conn.terminal_part_number_b} (supports AWG{min_gauge}-{max_gauge}).",
+                            error_type="CompatibilityError"
+                        ))
+
+                    # 2. Connector series check
+                    connector_b_series = conn.to_pin.connector.part_number.split('-')[0]
+                    compatible_series = terminal_b_spec.get("compatible_connector_series")
+                    if compatible_series and connector_b_series not in compatible_series:
+                        errors.append(ValidationError(
+                            component_id=str(conn.id), component_type="Connection",
+                            message=f"Terminal {conn.terminal_part_number_b} is not compatible with connector series {connector_b_series}.",
+                            error_type="CompatibilityError"
+                        ))
 
         return errors
 
