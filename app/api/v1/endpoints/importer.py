@@ -19,6 +19,9 @@ def import_dxf(
     """
     Import a DXF file to create a new harness with connectors.
     """
+    if dxf_file.filename is None:
+        raise HTTPException(status_code=400, detail="File name is missing.")
+
     if not dxf_file.filename.lower().endswith(".dxf"):
         raise HTTPException(
             status_code=400, detail="Invalid file type. Please upload a .dxf file."

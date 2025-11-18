@@ -41,10 +41,11 @@ def test_3d_model_upload_and_dxf_export(client: TestClient):
     project_id = project_data["id"]
 
     design_data: dict = {
+        "harness_id": harness_id,
         "design_data": {
             "nodes": [],
             "edges": [],
-        }
+        },
     }
     response = client.post(f"/api/v1/projects/{project_id}/save", json=design_data)
     assert response.status_code == 200
@@ -59,7 +60,7 @@ def test_3d_model_upload_and_dxf_export(client: TestClient):
         )
     assert response.status_code == 200
 
-    # 3. Export a DXF
+    # 4. Export a DXF
     response = client.get(f"/api/v1/harnesses/{harness_id}/jig-dxf")
     assert response.status_code == 200
     assert response.headers["content-type"] == "application/vnd.dxf"

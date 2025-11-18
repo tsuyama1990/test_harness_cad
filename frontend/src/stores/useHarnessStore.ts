@@ -56,18 +56,23 @@ const useHarnessStore = create<HarnessState>()(
         });
       },
       onEdgesChange: (changes: EdgeChange[]) => {
+        // Filter out 'add' changes, as we handle them in `onConnect`.
+        const filteredChanges = changes.filter(c => c.type !== 'add');
+
         set((state) => {
-          state.edges = applyEdgeChanges(changes, state.edges);
+          state.edges = applyEdgeChanges(filteredChanges, state.edges);
         });
       },
       onConnect: (connection: Connection) => {
         set((state) => {
-          const newEdge = {
+          const newEdge: Edge = {
+            id: uuidv4(),
+            type: 'customWire', // Ensure our custom edge type is used
             ...connection,
-            id: uuidv4(), // Generate a unique ID for the edge
             data: {
-              wire_id: uuidv4(), // Generate a unique wire_id
-              color: 'black', // Default color
+              wire_id: uuidv4(),
+              color: 'black',
+              length: 0, // Initial length
             },
           };
           state.edges = addEdge(newEdge, state.edges);

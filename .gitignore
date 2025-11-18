@@ -125,3 +125,4 @@ dmypy.json
 cython_debug/
 app/test.db
 test.db
+uploads/

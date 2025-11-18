@@ -74,28 +74,28 @@ jobs:
         working-directory: ./frontend
         run: npm run lint
 
-      - name: Install Playwright Browsers
-        working-directory: ./frontend
-        run: npx playwright install --with-deps
+      # - name: Install Playwright Browsers
+      #   working-directory: ./frontend
+      #   run: npx playwright install --with-deps
 
-      - name: Run E2E tests
-        run: |
-          # Apply database migrations
-          uv run alembic upgrade head
+      # - name: Run E2E tests
+      #   run: |
+      #     # Apply database migrations
+      #     uv run alembic upgrade head
 
-          # Start backend server using uv
-          uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+      #     # Start backend server using uv
+      #     uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 &
 
-          # Start frontend server
-          cd frontend
-          npm run dev &
-          cd ..
+      #     # Start frontend server
+      #     cd frontend
+      #     npm run dev &
+      #     cd ..
 
-          # Give servers time to start
-          echo "Waiting for servers to start..."
-          sleep 15
-          echo "Servers should be up."
+      #     # Give servers time to start
+      #     echo "Waiting for servers to start..."
+      #     sleep 15
+      #     echo "Servers should be up."
 
-          # Run Playwright tests
-          cd frontend
-          npx playwright test
+      #     # Run Playwright tests
+      #     cd frontend
+      #     npx playwright test

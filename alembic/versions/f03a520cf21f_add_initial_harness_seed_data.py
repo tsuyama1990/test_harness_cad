@@ -9,29 +9,30 @@ Create Date: 2025-11-16 15:05:14.534293
 import uuid
 
 import sqlalchemy as sa
+from sqlalchemy.dialects.postgresql import UUID as pgUUID
 
 from alembic import op
 
 # Define table stubs to prevent needing to import the full models
 # which might have dependencies that are not available during migrations.
 harnesses_table = sa.table(
-    "harnesses", sa.column("id", sa.String), sa.column("name", sa.String)
+    "harnesses", sa.column("id", pgUUID), sa.column("name", sa.String)
 )
 
 connectors_table = sa.table(
     "connectors",
-    sa.column("id", sa.String),
+    sa.column("id", pgUUID),
     sa.column("logical_id", sa.String),
     sa.column("manufacturer", sa.String),
     sa.column("part_number", sa.String),
-    sa.column("harness_id", sa.String),
+    sa.column("harness_id", pgUUID),
 )
 
 pins_table = sa.table(
     "pins",
-    sa.column("id", sa.String),
+    sa.column("id", pgUUID),
     sa.column("logical_id", sa.String),
-    sa.column("connector_id", sa.String),
+    sa.column("connector_id", pgUUID),
 )
 
 
@@ -47,9 +48,9 @@ def upgrade():
     Seed the database with initial data for E2E testing.
     Creates one harness with two connectors.
     """
-    harness_id = "0a9eb930-c504-4835-a281-3e5c1800e1d1"
-    conn1_id = str(uuid.uuid4())
-    conn2_id = str(uuid.uuid4())
+    harness_id = uuid.UUID("0a9eb930-c504-4835-a281-3e5c1800e1d1")
+    conn1_id = uuid.uuid4()
+    conn2_id = uuid.uuid4()
 
     # Seed Harness
     op.bulk_insert(
@@ -84,10 +85,10 @@ def upgrade():
     op.bulk_insert(
         pins_table,
         [
-            {"id": str(uuid.uuid4()), "logical_id": "1", "connector_id": conn1_id},
-            {"id": str(uuid.uuid4()), "logical_id": "2", "connector_id": conn1_id},
-            {"id": str(uuid.uuid4()), "logical_id": "1", "connector_id": conn2_id},
-            {"id": str(uuid.uuid4()), "logical_id": "2", "connector_id": conn2_id},
+            {"id": uuid.uuid4(), "logical_id": "1", "connector_id": conn1_id},
+            {"id": uuid.uuid4(), "logical_id": "2", "connector_id": conn1_id},
+            {"id": uuid.uuid4(), "logical_id": "1", "connector_id": conn2_id},
+            {"id": uuid.uuid4(), "logical_id": "2", "connector_id": conn2_id},
         ],
     )
 
