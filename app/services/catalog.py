@@ -7,7 +7,7 @@ This service simulates an external catalog API (like MISUMI) to fetch technical
 specifications for components based on their part number.
 """
 
-from typing import Dict, TypedDict
+from typing import Dict, List, TypedDict
 
 
 class PinData(TypedDict):
@@ -15,13 +15,23 @@ class PinData(TypedDict):
     pin_positions: list[dict[str, float]]  # e.g., [{"x": 0, "y": 0}, ...]
 
 
-class ComponentSpec(TypedDict):
+class ComponentSpec(TypedDict, total=False):
+    # Common specs
     voltage_rating: float | None
-    applicable_wire_max_diameter: float | None
-    outer_diameter: float | None
     is_rohs: bool | None
     is_ul: bool | None
+
+    # Connector specs
+    applicable_wire_max_diameter: float | None
     pins: PinData | None
+
+    # Wire specs
+    outer_diameter: float | None
+
+    # Terminal specs
+    applicable_wire_gauge_min: int | None
+    applicable_wire_gauge_max: int | None
+    compatible_connector_series: List[str] | None
 
 
 # Mock database for component specifications.
@@ -35,7 +45,6 @@ MOCK_CATALOG_DB: Dict[str, ComponentSpec] = {
         "is_rohs": True,
         "is_ul": True,
         "pins": {"pin_count": 3, "pin_positions": []},
-        "outer_diameter": None,
     },
     "PHR-3": {
         "voltage_rating": 100.0,
@@ -43,7 +52,6 @@ MOCK_CATALOG_DB: Dict[str, ComponentSpec] = {
         "is_rohs": True,
         "is_ul": True,
         "pins": {"pin_count": 3, "pin_positions": []},
-        "outer_diameter": None,
     },
     # Connector that is not RoHS compliant
     "OLD-CONN-01": {
@@ -52,7 +60,6 @@ MOCK_CATALOG_DB: Dict[str, ComponentSpec] = {
         "is_rohs": False,
         "is_ul": True,
         "pins": {"pin_count": 4, "pin_positions": []},
-        "outer_diameter": None,
     },
     # Wires
     "UL1007-26-RD": {
@@ -60,16 +67,12 @@ MOCK_CATALOG_DB: Dict[str, ComponentSpec] = {
         "outer_diameter": 1.2,  # mm
         "is_rohs": True,
         "is_ul": True,
-        "pins": None,
-        "applicable_wire_max_diameter": None,
     },
     "UL1007-22-BK": {
         "voltage_rating": 300.0,
         "outer_diameter": 1.6,
         "is_rohs": True,
         "is_ul": True,
-        "pins": None,
-        "applicable_wire_max_diameter": None,
     },
     # Wire with a large diameter
     "THICK-WIRE-01": {
@@ -77,8 +80,25 @@ MOCK_CATALOG_DB: Dict[str, ComponentSpec] = {
         "outer_diameter": 3.0,
         "is_rohs": True,
         "is_ul": True,
-        "pins": None,
-        "applicable_wire_max_diameter": None,
+    },
+    # Terminals
+    "DF13-2630SCF": {
+        "applicable_wire_gauge_min": 26,
+        "applicable_wire_gauge_max": 30,
+        "compatible_connector_series": ["DF13"],
+        "is_rohs": True,
+    },
+    "SPH-002T-P0.5S": {
+        "applicable_wire_gauge_min": 24,
+        "applicable_wire_gauge_max": 28,
+        "compatible_connector_series": ["PHR"],
+        "is_rohs": True,
+    },
+    "171662-0153": {
+        "applicable_wire_gauge_min": 22,
+        "applicable_wire_gauge_max": 26,
+        "compatible_connector_series": ["Molex-KK"],
+        "is_rohs": True,
     },
 }
 
