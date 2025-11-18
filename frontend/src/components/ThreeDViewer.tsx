@@ -12,6 +12,7 @@ interface ThreeDViewerProps {
 
 const PathCreator = ({ modelRef }: { modelRef: React.RefObject<THREE.Group> }) => {
   const [points, setPoints] = useState<THREE.Vector3[]>([]);
+  const [pathLength, setPathLength] = useState(0);
   const { camera, size } = useThree();
   const {
     harnessId,
@@ -22,6 +23,14 @@ const PathCreator = ({ modelRef }: { modelRef: React.RefObject<THREE.Group> }) =
     manufacturingMargin,
     setManufacturingMargin,
   } = useHarnessStore();
+
+  const calculateLength = useCallback((currentPoints: THREE.Vector3[]) => {
+    let length = 0;
+    for (let i = 0; i < currentPoints.length - 1; i++) {
+      length += currentPoints[i].distanceTo(currentPoints[i + 1]);
+    }
+    setPathLength(length);
+  }, []);
 
   const handleCanvasClick = useCallback(
     (event: MouseEvent) => {
@@ -37,11 +46,36 @@ const PathCreator = ({ modelRef }: { modelRef: React.RefObject<THREE.Group> }) =
       const intersects = raycaster.intersectObjects(modelRef.current.children, true);
 
       if (intersects.length > 0) {
-        setPoints([...points, intersects[0].point]);
+        const newPoints = [...points, intersects[0].point];
+        setPoints(newPoints);
+        calculateLength(newPoints);
       }
     },
-    [points, camera, modelRef, size]
+    [points, camera, modelRef, size, calculateLength]
   );
+
+  const undo = useCallback(() => {
+    const newPoints = points.slice(0, -1);
+    setPoints(newPoints);
+    calculateLength(newPoints);
+  }, [points, calculateLength]);
+
+  const clearPath = useCallback(() => {
+    setPoints([]);
+    setPathLength(0);
+  }, []);
+
+  React.useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.key === 'z') {
+        undo();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [undo]);
 
   const savePath = async () => {
     const edge = edges.find(e => e.id === selectedEdgeId);
@@ -74,19 +108,46 @@ const PathCreator = ({ modelRef }: { modelRef: React.RefObject<THREE.Group> }) =
         <boxBufferGeometry args={[1000, 1000, 1000]} />
         <meshStandardMaterial transparent opacity={0} />
       </mesh>
-      {points.length > 1 && <Line points={points} color="red" lineWidth={3} />}
-      <div style={{ position: 'absolute', top: '10px', left: '10px', background: 'white', padding: '5px' }}>
-        <button onClick={savePath}>Save Path</button>
-        <label>
-          Margin:
-          <input
-            type="number"
-            value={manufacturingMargin}
-            onChange={(e) => setManufacturingMargin(parseFloat(e.target.value))}
-            step="0.01"
-            min="1"
-          />
-        </label>
+      {points.map((point, index) => (
+        <mesh key={index} position={point}>
+          <sphereGeometry args={[0.5, 16, 16]} />
+          <meshStandardMaterial color="hotpink" />
+        </mesh>
+      ))}
+      {points.length > 1 && <Line points={points} color={wireColor} lineWidth={3} />}
+      <div
+        style={{
+          position: 'absolute',
+          top: '10px',
+          left: '10px',
+          background: 'rgba(255, 255, 255, 0.5)',
+          padding: '10px',
+          borderRadius: '5px',
+        }}
+      >
+        <button onClick={savePath} style={{ marginBottom: '5px' }}>
+          Save Path
+        </button>
+        <button onClick={undo} style={{ marginBottom: '5px', marginLeft: '5px' }}>
+          Undo
+        </button>
+        <button onClick={clearPath} style={{ marginBottom: '5px', marginLeft: '5px' }}>
+          Clear Path
+        </button>
+        <div>
+          <label>
+            Margin:
+            <input
+              type="number"
+              value={manufacturingMargin}
+              onChange={(e) => setManufacturingMargin(parseFloat(e.target.value))}
+              step="0.01"
+              min="1"
+              style={{ width: '60px', marginLeft: '5px' }}
+            />
+          </label>
+        </div>
+        <div style={{ marginTop: '5px' }}>Length: {pathLength.toFixed(2)} mm</div>
       </div>
     </>
   );
