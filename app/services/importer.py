@@ -1,10 +1,11 @@
 # app/services/importer.py
 
 import io
-from typing import IO
+from typing import IO, cast
 
 import ezdxf
 from ezdxf.document import Drawing
+from ezdxf.entities import Insert
 from sqlalchemy.orm import Session
 
 from app import models
@@ -21,7 +22,14 @@ class ImporterService:
         """
         Parses a DXF file to import connectors and create a new harness.
         """
-        doc: Drawing = ezdxf.read(io.BytesIO(dxf_file.read()))
+        doc: Drawing
+        try:
+            # Attempt to read the DXF file with UTF-8 encoding
+            doc = ezdxf.read(io.TextIOWrapper(dxf_file, encoding="utf-8"))
+        except UnicodeDecodeError:
+            # If UTF-8 fails, reset stream and try with a common legacy encoding
+            dxf_file.seek(0)
+            doc = ezdxf.read(io.TextIOWrapper(dxf_file, encoding="cp1252"))
         msp = doc.modelspace()
 
         # Create a new Harness to host the imported components
@@ -32,14 +40,14 @@ class ImporterService:
         imported_connectors = []
         # Find all block references (INSERT entities) in the modelspace
         for block_ref in msp.query("INSERT"):
-            part_number_attrib = block_ref.get_attrib("PART_NUMBER")
-            ref_des_attrib = block_ref.get_attrib("REF_DES")
+            if not isinstance(block_ref, Insert):
+                continue
+            insert_entity = cast(Insert, block_ref)
+            part_number = insert_entity.get_attrib_text("PART_NUMBER")
+            ref_des = insert_entity.get_attrib_text("REF_DES")
 
-            if not part_number_attrib or not ref_des_attrib:
+            if not part_number or not ref_des:
                 continue  # Skip blocks that don't have the required attributes
-
-            part_number = part_number_attrib.text
-            ref_des = ref_des_attrib.text
 
             db_connector = models.Connector(
                 logical_id=ref_des,

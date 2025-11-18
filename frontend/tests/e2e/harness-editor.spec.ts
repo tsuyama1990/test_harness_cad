@@ -44,6 +44,9 @@ test.describe('Harness Editor E2E Tests', () => {
     const handleSource = page.getByTestId('handle-source-CONN1-1');
     const handleTarget = page.getByTestId('handle-target-CONN2-1');
 
+    // Verify that no edges exist before creating a new one
+    await expect(page.locator('.react-flow__edge')).toHaveCount(0);
+
     await handleSource.dragTo(handleTarget);
 
     // Verify edge is created

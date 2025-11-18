@@ -34,18 +34,35 @@ def save_design(
     """
     Save a harness design.
     """
-    # In a real app, you'd have a more robust way of handling designs
-    # For now, we'll just create a new harness design every time
-    harness = models.Harness(name="New Harness")
-    db.add(harness)
-    db.commit()
-    db.refresh(harness)
-
-    harness_design = models.HarnessDesign(
-        project_id=project_id,
-        harness_id=harness.id,
-        design_data=design_in.design_data.model_dump(),
+    # Check if harness exists
+    harness = (
+        db.query(models.Harness)
+        .filter(models.Harness.id == design_in.harness_id)
+        .first()
     )
+    if not harness:
+        raise HTTPException(status_code=404, detail="Harness not found")
+
+    harness_design = (
+        db.query(models.HarnessDesign)
+        .filter(
+            models.HarnessDesign.project_id == project_id,
+            models.HarnessDesign.harness_id == design_in.harness_id,
+        )
+        .first()
+    )
+
+    if harness_design:
+        # Update existing design
+        harness_design.design_data = design_in.design_data.model_dump()
+    else:
+        # Create new design
+        harness_design = models.HarnessDesign(
+            project_id=project_id,
+            harness_id=design_in.harness_id,
+            design_data=design_in.design_data.model_dump(),
+        )
+
     db.add(harness_design)
     db.commit()
     db.refresh(harness_design)

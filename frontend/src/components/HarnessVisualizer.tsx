@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useMemo, useRef } from 'react';
 import ReactFlow, {
   Controls,
   Background,
@@ -13,14 +13,13 @@ import { useHarnessData } from '../hooks/useHarnessData';
 import { useReactFlowDnD } from '../hooks/useReactFlowDnD';
 import { useHarnessSync } from '../hooks/useHarnessSync';
 
-const nodeTypes = { customConnector: CustomConnectorNode };
-const edgeTypes = { customWire: CustomWireEdge };
-
 interface HarnessVisualizerProps {
   harnessId: string;
 }
 
 const FlowCanvas: React.FC<HarnessVisualizerProps> = ({ harnessId }) => {
+  const nodeTypes = useMemo(() => ({ customConnector: CustomConnectorNode }), []);
+  const edgeTypes = useMemo(() => ({ customWire: CustomWireEdge }), []);
   const { nodes, edges, onNodesChange, onEdgesChange, onConnect } =
     useHarnessStore();
   const reactFlowWrapper = useRef<HTMLDivElement>(null);

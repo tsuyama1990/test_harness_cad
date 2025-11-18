@@ -275,6 +275,8 @@ def upload_3d_model(
     """
     Upload a 3D model for the harness.
     """
+    if file.filename is None:
+        raise HTTPException(status_code=400, detail="No filename provided.")
     # Validate file extension
     allowed_extensions = {".glb", ".gltf", ".obj"}
     file_extension = Path(file.filename).suffix.lower()

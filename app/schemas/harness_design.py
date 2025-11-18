@@ -1,4 +1,5 @@
 from typing import List, Optional
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
@@ -48,6 +49,7 @@ class DesignData(HarnessDesign):
 
 class DesignSave(BaseModel):
     design_data: DesignData
+    harness_id: UUID
 
 
 class HarnessDesignSaveResponse(BaseModel):

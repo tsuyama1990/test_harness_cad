@@ -161,7 +161,7 @@ class HarnessService:
         db.commit()
         db.refresh(db_harness)
         return db_harness
-    
+
     def get_harness(self, db: Session, harness_id: UUID) -> models.Harness:
         db_harness = (
             db.query(models.Harness)

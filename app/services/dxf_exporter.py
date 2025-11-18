@@ -69,13 +69,16 @@ class DxfExporter:
         self.msp.add_lwpolyline(points, dxfattribs={"layer": self.LAYER_CONNECTOR})
 
         # Add connector ID text
-        self.msp.add_text(
+        text = self.msp.add_text(
             node.data.label,
             dxfattribs={
                 "layer": self.LAYER_TEXT,
                 "height": 5 * self.scale,
             },
-        ).set_pos((x, y + 5 * self.scale), align="BOTTOM_LEFT")
+        )
+        text.dxf.insert = (x, y + 5 * self.scale)
+        text.dxf.halign = ezdxf.const.LEFT
+        text.dxf.valign = ezdxf.const.BOTTOM
 
         # Draw jig holes at the center of each side for positioning
         self._draw_jig_hole(x + width / 2, y)
@@ -109,13 +112,16 @@ class DxfExporter:
         # Add wire ID text at the midpoint of the wire
         mid_x = (source_x + target_x) / 2
         mid_y = (source_y + target_y) / 2
-        self.msp.add_text(
+        text = self.msp.add_text(
             edge.data.wire_id,
             dxfattribs={
                 "layer": self.LAYER_TEXT,
                 "height": 3 * self.scale,
             },
-        ).set_pos((mid_x, mid_y), align="MIDDLE_CENTER")
+        )
+        text.dxf.insert = (mid_x, mid_y)
+        text.dxf.halign = ezdxf.const.CENTER
+        text.dxf.valign = ezdxf.const.MIDDLE
 
     def _draw_jig_hole(self, x: float, y: float):
         """Draw a standardized jig hole as a circle."""

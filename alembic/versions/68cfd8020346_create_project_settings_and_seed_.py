@@ -5,14 +5,16 @@ Revises: 4483e00d5df0
 Create Date: 2025-11-18 14:12:22.123456
 
 """
-from alembic import op
-import sqlalchemy as sa
+
 from datetime import datetime
 
+import sqlalchemy as sa
+
+from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = '68cfd8020346'
-down_revision = '4483e00d5df0'
+revision = "68cfd8020346"
+down_revision = "4483e00d5df0"
 branch_labels = None
 depends_on = None
 
@@ -31,17 +33,24 @@ projects_table = sa.table(
     sa.column("name", sa.String),
 )
 
+
 def upgrade():
-    op.create_table('project_settings',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('project_id', sa.Integer(), nullable=False),
-    sa.Column('system_voltage', sa.Float(), nullable=True),
-    sa.Column('require_rohs', sa.Boolean(), nullable=False),
-    sa.Column('require_ul', sa.Boolean(), nullable=False),
-    sa.ForeignKeyConstraint(['project_id'], ['projects.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    op.create_table(
+        "project_settings",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("project_id", sa.Integer(), nullable=False),
+        sa.Column("system_voltage", sa.Float(), nullable=True),
+        sa.Column("require_rohs", sa.Boolean(), nullable=False),
+        sa.Column("require_ul", sa.Boolean(), nullable=False),
+        sa.ForeignKeyConstraint(
+            ["project_id"],
+            ["projects.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(op.f('ix_project_settings_id'), 'project_settings', ['id'], unique=False)
+    op.create_index(
+        op.f("ix_project_settings_id"), "project_settings", ["id"], unique=False
+    )
 
     project_id = 1
     harness_id = "0a9eb930-c504-4835-a281-3e5c1800e1d1"
@@ -68,7 +77,7 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_index(op.f('ix_project_settings_id'), table_name='project_settings')
-    op.drop_table('project_settings')
+    op.drop_index(op.f("ix_project_settings_id"), table_name="project_settings")
+    op.drop_table("project_settings")
     op.execute("DELETE FROM harness_designs WHERE id = 1")
     op.execute("DELETE FROM projects WHERE id = 1")
