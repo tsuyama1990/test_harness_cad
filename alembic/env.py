@@ -59,6 +59,10 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
+    db_url = context.get_x_argument(as_dictionary=True).get('db_url')
+    if db_url:
+        config.set_main_option('sqlalchemy.url', db_url)
+
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",

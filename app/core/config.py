@@ -10,7 +10,7 @@ class Settings(BaseSettings):
         KICAD_CLI_PATH: The full path to the kicad-cli executable.
     """
 
-    DATABASE_URL: str = "sqlite:///test.db"
+    DATABASE_URL: str = "sqlite:////home/tomoyuki_tsuyama/project/001_harness_designer/test_harness_cad/test.db"
     KICAD_CLI_PATH: str = "/usr/bin/kicad-cli"
     BACKEND_CORS_ORIGINS: list[str] = ["http://localhost:3000"]
 
