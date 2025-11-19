@@ -1,5 +1,4 @@
 import React from 'react';
-import Panel from './ui/Panel';
 import Input from './ui/Input';
 import Button from './ui/Button';
 
@@ -28,40 +27,46 @@ const PathEditorPanel: React.FC<PathEditorPanelProps> = ({
 }) => {
   if (!selectedEdgeId) {
     return (
-      <div className="absolute top-4 left-4 bg-gray-900 bg-opacity-70 text-white p-4 rounded-lg shadow-lg">
-        <p>Select a wire in the 2D view to start routing.</p>
+      <div className="absolute top-4 right-4 w-64 bg-white/90 backdrop-blur-md shadow-lg rounded-xl p-4 border border-gray-200">
+        <p className="text-sm text-gray-600">
+          Select a wire in the 2D view to start routing.
+        </p>
       </div>
     );
   }
 
   return (
-    <Panel className="absolute top-4 left-4 w-64 bg-opacity-90 backdrop-blur-sm">
-      <h3 className="text-lg font-semibold mb-3 pb-2 border-b border-gray-200">
-        Wire Path Editor
-      </h3>
+    <div className="absolute top-4 right-4 w-64 bg-white/90 backdrop-blur-md shadow-lg rounded-xl p-4 border border-gray-200">
+      <h3 className="text-lg font-bold mb-3 text-gray-800">Wire Path Editor</h3>
 
-      <div className="mb-3">
-        <strong className="text-sm font-medium">Selected Wire:</strong>
-        <div className="flex items-center mt-1">
-          <div
-            className="w-4 h-4 rounded-sm border border-gray-400 mr-2"
-            style={{ backgroundColor: wireColor }}
-          ></div>
-          <span className="text-sm font-mono">{selectedEdgeId}</span>
+      <div className="bg-gray-50 rounded-md p-3 mb-3 text-sm space-y-1">
+        <div className="flex justify-between items-center">
+          <span className="text-gray-500">Wire ID</span>
+          <div className="flex items-center gap-2">
+            <div
+              className="w-4 h-4 rounded-sm border border-gray-400"
+              style={{ backgroundColor: wireColor }}
+            ></div>
+            <span className="font-mono text-gray-800">{selectedEdgeId}</span>
+          </div>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-gray-500">Length</span>
+          <span className="font-mono text-gray-800">
+            {pathLength.toFixed(2)} mm
+          </span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-gray-500">Total Length</span>
+          <span className="font-mono text-gray-800">
+            {totalLength.toFixed(2)} mm
+          </span>
         </div>
       </div>
 
-      <div className="mb-2 text-sm">
-        <strong>Path Length:</strong> {pathLength.toFixed(2)} mm
-      </div>
-
-      <div className="mb-4 text-sm">
-        <strong>Total Length (incl. Margin):</strong> {totalLength.toFixed(2)} mm
-      </div>
-
       <div className="mb-4">
-        <label className="block text-sm font-medium mb-1">
-          Manufacturing Margin:
+        <label className="block text-sm font-medium mb-1 text-gray-600">
+          Manufacturing Margin
         </label>
         <Input
           type="number"
@@ -72,19 +77,18 @@ const PathEditorPanel: React.FC<PathEditorPanelProps> = ({
         />
       </div>
 
-      <div className="flex justify-between gap-2 mb-2">
+      <div className="flex gap-2">
         <Button onClick={onUndo} variant="secondary" className="flex-1">
           Undo
         </Button>
         <Button onClick={onClear} variant="outline" className="flex-1">
           Clear
         </Button>
+        <Button onClick={onSave} variant="primary" className="flex-1">
+          Save
+        </Button>
       </div>
-
-      <Button onClick={onSave} variant="primary" className="w-full">
-        Save Path
-      </Button>
-    </Panel>
+    </div>
   );
 };
 
