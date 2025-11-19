@@ -347,11 +347,7 @@ class HarnessService:
 
             # Ensure pins and connectors are loaded
             if not (
-                wire
-                and from_pin
-                and to_pin
-                and from_pin.connector
-                and to_pin.connector
+                wire and from_pin and to_pin and from_pin.connector and to_pin.connector
             ):
                 continue  # Or raise an error for incomplete data
 

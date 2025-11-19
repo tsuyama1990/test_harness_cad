@@ -218,15 +218,28 @@ def test_terminal_compatibility_success(
     Test a connection with fully compatible terminals.
     """
     connector = models.Connector(
-        logical_id="C1", manufacturer="JST", part_number="PHR-3",
-        harness_id=mock_harness.id, voltage_rating=50.0,
-        applicable_wire_max_diameter=2.0, is_rohs=True, is_ul=True,
+        logical_id="C1",
+        manufacturer="JST",
+        part_number="PHR-3",
+        harness_id=mock_harness.id,
+        voltage_rating=50.0,
+        applicable_wire_max_diameter=2.0,
+        is_rohs=True,
+        is_ul=True,
     )
     # Correct gauge for the terminal 'SPH-002T-P0.5S' (AWG 24-28)
     wire = models.Wire(
-        logical_id="W1", manufacturer="Test", part_number="UL1007-26-RD",
-        harness_id=mock_harness.id, color="RD", gauge=26, length=100,
-        voltage_rating=100.0, outer_diameter=1.2, is_rohs=True, is_ul=True,
+        logical_id="W1",
+        manufacturer="Test",
+        part_number="UL1007-26-RD",
+        harness_id=mock_harness.id,
+        color="RD",
+        gauge=26,
+        length=100,
+        voltage_rating=100.0,
+        outer_diameter=1.2,
+        is_rohs=True,
+        is_ul=True,
     )
     pin1 = models.Pin(logical_id="1", connector=connector)
     pin2 = models.Pin(logical_id="2", connector=connector)
@@ -234,8 +247,10 @@ def test_terminal_compatibility_success(
     db_session.commit()
 
     connection = models.Connection(
-        harness_id=mock_harness.id, wire_id=wire.id,
-        from_pin_id=pin1.id, to_pin_id=pin2.id,
+        harness_id=mock_harness.id,
+        wire_id=wire.id,
+        from_pin_id=pin1.id,
+        to_pin_id=pin2.id,
         # Correct terminal for PH series connector and AWG 26 wire
         terminal_part_number_a="SPH-002T-P0.5S",
     )
@@ -256,15 +271,28 @@ def test_terminal_compatibility_wire_gauge_error(
     Test a connection where the wire gauge is not compatible with the terminal.
     """
     connector = models.Connector(
-        logical_id="C1", manufacturer="JST", part_number="PHR-3",
-        harness_id=mock_harness.id, voltage_rating=50.0,
-        applicable_wire_max_diameter=2.0, is_rohs=True, is_ul=True,
+        logical_id="C1",
+        manufacturer="JST",
+        part_number="PHR-3",
+        harness_id=mock_harness.id,
+        voltage_rating=50.0,
+        applicable_wire_max_diameter=2.0,
+        is_rohs=True,
+        is_ul=True,
     )
     # AWG 22 wire is too thick for 'SPH-002T-P0.5S' (AWG 24-28)
     wire = models.Wire(
-        logical_id="W1", manufacturer="Test", part_number="UL1007-22-BK",
-        harness_id=mock_harness.id, color="BK", gauge=22, length=100,
-        voltage_rating=100.0, outer_diameter=1.6, is_rohs=True, is_ul=True,
+        logical_id="W1",
+        manufacturer="Test",
+        part_number="UL1007-22-BK",
+        harness_id=mock_harness.id,
+        color="BK",
+        gauge=22,
+        length=100,
+        voltage_rating=100.0,
+        outer_diameter=1.6,
+        is_rohs=True,
+        is_ul=True,
     )
     pin1 = models.Pin(logical_id="1", connector=connector)
     pin2 = models.Pin(logical_id="2", connector=connector)
@@ -272,8 +300,10 @@ def test_terminal_compatibility_wire_gauge_error(
     db_session.commit()
 
     connection = models.Connection(
-        harness_id=mock_harness.id, wire_id=wire.id,
-        from_pin_id=pin1.id, to_pin_id=pin2.id,
+        harness_id=mock_harness.id,
+        wire_id=wire.id,
+        from_pin_id=pin1.id,
+        to_pin_id=pin2.id,
         terminal_part_number_a="SPH-002T-P0.5S",
     )
     db_session.add(connection)
@@ -296,14 +326,27 @@ def test_terminal_compatibility_connector_series_error(
     """
     # DF13 series connector
     connector = models.Connector(
-        logical_id="C1", manufacturer="Hirose", part_number="DF13-3S-1.25C",
-        harness_id=mock_harness.id, voltage_rating=50.0,
-        applicable_wire_max_diameter=2.0, is_rohs=True, is_ul=True,
+        logical_id="C1",
+        manufacturer="Hirose",
+        part_number="DF13-3S-1.25C",
+        harness_id=mock_harness.id,
+        voltage_rating=50.0,
+        applicable_wire_max_diameter=2.0,
+        is_rohs=True,
+        is_ul=True,
     )
     wire = models.Wire(
-        logical_id="W1", manufacturer="Test", part_number="UL1007-26-RD",
-        harness_id=mock_harness.id, color="RD", gauge=26, length=100,
-        voltage_rating=100.0, outer_diameter=1.2, is_rohs=True, is_ul=True,
+        logical_id="W1",
+        manufacturer="Test",
+        part_number="UL1007-26-RD",
+        harness_id=mock_harness.id,
+        color="RD",
+        gauge=26,
+        length=100,
+        voltage_rating=100.0,
+        outer_diameter=1.2,
+        is_rohs=True,
+        is_ul=True,
     )
     pin1 = models.Pin(logical_id="1", connector=connector)
     pin2 = models.Pin(logical_id="2", connector=connector)
@@ -311,8 +354,10 @@ def test_terminal_compatibility_connector_series_error(
     db_session.commit()
 
     connection = models.Connection(
-        harness_id=mock_harness.id, wire_id=wire.id,
-        from_pin_id=pin1.id, to_pin_id=pin2.id,
+        harness_id=mock_harness.id,
+        wire_id=wire.id,
+        from_pin_id=pin1.id,
+        to_pin_id=pin2.id,
         # SPH terminal is for PH series, not DF13
         terminal_part_number_a="SPH-002T-P0.5S",
     )
