@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { getComponents, type LibraryComponent } from '../services/api';
 import useHarnessStore from '../stores/useHarnessStore';
 import { API_BASE_URL } from '../services/api';
+import Button from './ui/Button'; // Import the new Button component
 
 const Sidebar: React.FC = () => {
   const [components, setComponents] = useState<LibraryComponent[]>([]);
@@ -26,24 +27,29 @@ const Sidebar: React.FC = () => {
   };
 
   return (
-    <aside className="sidebar" data-testid="sidebar">
-      <h3>Component Library</h3>
-      {components
-        .filter((c) => c.type === 'connector')
-        .map((component) => (
-          <div
-            key={component.id}
-            className="sidebar-component"
-            onDragStart={(event) => onDragStart(event, component)}
-            draggable
-            data-testid={`component-${component.name}`}
-          >
-            {component.name}
-          </div>
-        ))}
-      <div className="sidebar-section">
-        <h3>Exports</h3>
-        <button
+    <aside
+      className="w-64 bg-surface p-4 border-r border-gray-200 flex flex-col"
+      data-testid="sidebar"
+    >
+      <h3 className="text-lg font-semibold mb-4">Component Library</h3>
+      <div className="flex-grow">
+        {components
+          .filter((c) => c.type === 'connector')
+          .map((component) => (
+            <div
+              key={component.id}
+              className="p-2 mb-2 border rounded cursor-grab bg-white shadow-sm hover:shadow-md transition-shadow"
+              onDragStart={(event) => onDragStart(event, component)}
+              draggable
+              data-testid={`component-${component.name}`}
+            >
+              {component.name}
+            </div>
+          ))}
+      </div>
+      <div className="flex flex-col space-y-2">
+        <h3 className="text-lg font-semibold mb-2">Exports</h3>
+        <Button
           onClick={() =>
             window.open(
               `${API_BASE_URL}/harnesses/${harnessId}/strip-list`,
@@ -51,10 +57,11 @@ const Sidebar: React.FC = () => {
             )
           }
           disabled={!harnessId}
+          variant="secondary"
         >
-          Export Strip List (CSV)
-        </button>
-        <button
+          Strip List (CSV)
+        </Button>
+        <Button
           onClick={() =>
             window.open(
               `${API_BASE_URL}/harnesses/${harnessId}/mark-tube-list`,
@@ -62,10 +69,11 @@ const Sidebar: React.FC = () => {
             )
           }
           disabled={!harnessId}
+          variant="secondary"
         >
-          Export Mark Tube List (CSV)
-        </button>
-        <button
+          Mark Tube List (CSV)
+        </Button>
+        <Button
           onClick={() =>
             window.open(
               `${API_BASE_URL}/harnesses/${harnessId}/formboard-pdf`,
@@ -73,10 +81,11 @@ const Sidebar: React.FC = () => {
             )
           }
           disabled={!harnessId}
+          variant="secondary"
         >
-          Export Formboard (PDF)
-        </button>
-        <button
+          Formboard (PDF)
+        </Button>
+        <Button
           onClick={() => {
             const scale = prompt('Enter scale factor:', '1.0');
             if (scale) {
@@ -87,9 +96,10 @@ const Sidebar: React.FC = () => {
             }
           }}
           disabled={!harnessId}
+          variant="secondary"
         >
-          Export Jig (DXF)
-        </button>
+          Jig (DXF)
+        </Button>
       </div>
     </aside>
   );
