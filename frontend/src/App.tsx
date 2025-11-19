@@ -2,14 +2,15 @@ import { ReactFlowProvider } from 'reactflow';
 import Sidebar from './components/Sidebar';
 import MainCanvas from './components/MainCanvas';
 import AttributeEditorPanel from './components/AttributeEditorPanel';
-import './App.css';
 
 function App() {
   return (
-    <div className="app-container">
+    <div className="flex flex-row h-screen bg-background text-text-main">
       <ReactFlowProvider>
         <Sidebar />
-        <MainCanvas />
+        <div className="flex-grow h-screen">
+          <MainCanvas />
+        </div>
         <AttributeEditorPanel />
       </ReactFlowProvider>
     </div>

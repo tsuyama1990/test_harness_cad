@@ -1,5 +1,7 @@
-// frontend/src/components/PathEditorPanel.tsx
 import React from 'react';
+import Panel from './ui/Panel';
+import Input from './ui/Input';
+import Button from './ui/Button';
 
 interface PathEditorPanelProps {
   selectedEdgeId: string | null;
@@ -26,119 +28,63 @@ const PathEditorPanel: React.FC<PathEditorPanelProps> = ({
 }) => {
   if (!selectedEdgeId) {
     return (
-      <div
-        style={{
-          position: 'absolute',
-          top: '20px',
-          left: '20px',
-          background: 'rgba(0, 0, 0, 0.6)',
-          color: 'white',
-          padding: '15px',
-          borderRadius: '10px',
-        }}
-      >
+      <div className="absolute top-4 left-4 bg-gray-900 bg-opacity-70 text-white p-4 rounded-lg shadow-lg">
         <p>Select a wire in the 2D view to start routing.</p>
       </div>
     );
   }
 
   return (
-    <div
-      style={{
-        position: 'absolute',
-        top: '20px',
-        left: '20px',
-        background: 'rgba(255, 255, 255, 0.8)',
-        padding: '15px',
-        borderRadius: '10px',
-        boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-        fontFamily: 'sans-serif',
-        color: '#333',
-        width: '240px',
-        zIndex: 1000,
-      }}
-    >
-      <h3
-        style={{
-          marginTop: 0,
-          marginBottom: '15px',
-          borderBottom: '1px solid #ddd',
-          paddingBottom: '10px',
-        }}
-      >
+    <Panel className="absolute top-4 left-4 w-64 bg-opacity-90 backdrop-blur-sm">
+      <h3 className="text-lg font-semibold mb-3 pb-2 border-b border-gray-200">
         Wire Path Editor
       </h3>
 
-      <div style={{ marginBottom: '10px' }}>
-        <strong>Selected Wire:</strong>
-        <div style={{ display: 'flex', alignItems: 'center', marginTop: '5px' }}>
+      <div className="mb-3">
+        <strong className="text-sm font-medium">Selected Wire:</strong>
+        <div className="flex items-center mt-1">
           <div
-            style={{
-              width: '16px',
-              height: '16px',
-              backgroundColor: wireColor,
-              marginRight: '8px',
-              borderRadius: '3px',
-              border: '1px solid #888',
-            }}
+            className="w-4 h-4 rounded-sm border border-gray-400 mr-2"
+            style={{ backgroundColor: wireColor }}
           ></div>
-          <span>ID: {selectedEdgeId}</span>
+          <span className="text-sm font-mono">{selectedEdgeId}</span>
         </div>
       </div>
 
-      <div style={{ marginBottom: '10px' }}>
+      <div className="mb-2 text-sm">
         <strong>Path Length:</strong> {pathLength.toFixed(2)} mm
       </div>
 
-      <div style={{ marginBottom: '15px' }}>
+      <div className="mb-4 text-sm">
         <strong>Total Length (incl. Margin):</strong> {totalLength.toFixed(2)} mm
       </div>
 
-      <div style={{ marginBottom: '15px' }}>
-        <label style={{ display: 'block', marginBottom: '5px' }}>
+      <div className="mb-4">
+        <label className="block text-sm font-medium mb-1">
           Manufacturing Margin:
         </label>
-        <input
+        <Input
           type="number"
           value={manufacturingMargin}
           onChange={(e) => setManufacturingMargin(parseFloat(e.target.value))}
           step="0.01"
           min="1"
-          style={{ width: '100%', padding: '5px', boxSizing: 'border-box' }}
         />
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '5px' }}>
-        <button
-          onClick={onUndo}
-          style={{ flex: 1, padding: '8px', cursor: 'pointer' }}
-        >
+      <div className="flex justify-between gap-2 mb-2">
+        <Button onClick={onUndo} variant="secondary" className="flex-1">
           Undo
-        </button>
-        <button
-          onClick={onClear}
-          style={{ flex: 1, padding: '8px', cursor: 'pointer' }}
-        >
+        </Button>
+        <Button onClick={onClear} variant="outline" className="flex-1">
           Clear
-        </button>
+        </Button>
       </div>
 
-      <button
-        onClick={onSave}
-        style={{
-          width: '100%',
-          padding: '10px',
-          marginTop: '10px',
-          background: '#007bff',
-          color: 'white',
-          border: 'none',
-          borderRadius: '5px',
-          cursor: 'pointer',
-        }}
-      >
+      <Button onClick={onSave} variant="primary" className="w-full">
         Save Path
-      </button>
-    </div>
+      </Button>
+    </Panel>
   );
 };
 

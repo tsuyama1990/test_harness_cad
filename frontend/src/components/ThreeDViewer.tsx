@@ -153,7 +153,7 @@ const PathCreator = () => {
 
 const ThreeDViewer: React.FC<ThreeDViewerProps> = ({ modelPath }) => {
   return (
-    <Canvas style={{ background: '#f0f0f0' }}>
+    <Canvas className="bg-gray-100">
       <ambientLight intensity={0.5} />
       <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
       <pointLight position={[-10, -10, -10]} />
