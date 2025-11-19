@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -17,7 +17,7 @@ class Project(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String, index=True, unique=True)
 
-    harness_designs: Mapped[List["HarnessDesign"]] = relationship(
+    harness_designs: Mapped[list["HarnessDesign"]] = relationship(
         "HarnessDesign", back_populates="project"
     )
     settings: Mapped["ProjectSettings"] = relationship(

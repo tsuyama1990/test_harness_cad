@@ -65,17 +65,21 @@ const useHarnessStore = create<HarnessState>()(
       },
       onConnect: (connection: Connection) => {
         set((state) => {
-          const newEdge: Edge = {
-            id: uuidv4(),
-            type: 'customWire', // Ensure our custom edge type is used
-            ...connection,
-            data: {
-              wire_id: uuidv4(),
-              color: 'black',
-              length: 0, // Initial length
-            },
-          };
-          state.edges = addEdge(newEdge, state.edges);
+          if (connection.source && connection.target) {
+            const newEdge: Edge = {
+              id: uuidv4(),
+              type: 'customWire',
+              ...connection,
+              source: connection.source,
+              target: connection.target,
+              data: {
+                wire_id: uuidv4(),
+                color: 'black',
+                length: 0,
+              },
+            };
+            state.edges = addEdge(newEdge, state.edges);
+          }
         });
       },
       updateNodeData: (nodeId: string, data: Record<string, unknown>) => {

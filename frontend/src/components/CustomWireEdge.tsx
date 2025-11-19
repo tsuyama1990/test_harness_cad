@@ -11,7 +11,7 @@ interface CustomWireEdgeProps {
   sourcePosition: Position;
   targetPosition: Position;
   style?: React.CSSProperties;
-  data: {
+  data?: {
     color: string;
     wire_id: string;
   };
@@ -27,6 +27,10 @@ const CustomWireEdge: React.FC<CustomWireEdgeProps> = ({
   targetPosition,
   data,
 }) => {
+  if (!data) {
+    return null;
+  }
+
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
     sourceY,

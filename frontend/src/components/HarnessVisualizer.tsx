@@ -44,7 +44,6 @@ const FlowCanvas: React.FC<HarnessVisualizerProps> = ({ harnessId }) => {
         onDragOver={onDragOver}
         onDrop={onDrop}
         fitView
-        connectionMode="loose"
       >
         <Controls />
         <Background />

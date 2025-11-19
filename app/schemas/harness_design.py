@@ -1,4 +1,3 @@
-from typing import List, Optional
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
@@ -7,8 +6,8 @@ from pydantic import BaseModel, ConfigDict
 class NodeData(BaseModel):
     id: str
     label: str
-    manufacturer: Optional[str] = None
-    part_number: Optional[str] = None
+    manufacturer: str | None = None
+    part_number: str | None = None
     # Add other component-specific fields as needed
 
 
@@ -17,8 +16,8 @@ class Node(BaseModel):
     type: str
     position: dict[str, float]
     data: NodeData
-    width: Optional[float] = None
-    height: Optional[float] = None
+    width: float | None = None
+    height: float | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -33,14 +32,14 @@ class Edge(BaseModel):
     id: str
     source: str
     target: str
-    sourceHandle: Optional[str] = None
-    targetHandle: Optional[str] = None
+    sourceHandle: str | None = None
+    targetHandle: str | None = None
     data: EdgeData
 
 
 class HarnessDesign(BaseModel):
-    nodes: List[Node]
-    edges: List[Edge]
+    nodes: list[Node]
+    edges: list[Edge]
 
 
 class DesignData(HarnessDesign):

@@ -1,19 +1,20 @@
 /* eslint-disable react/no-unknown-property */
-import React, { useState, useCallback } from 'react';
-import { Canvas, useThree } from '@react-three/fiber';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import { Canvas } from '@react-three/fiber';
+import type { ThreeEvent } from '@react-three/fiber';
 import { OrbitControls, Gltf, Line } from '@react-three/drei';
 import * as THREE from 'three';
 import useHarnessStore from '../stores/useHarnessStore';
 import axios from 'axios';
+import PathEditorPanel from './PathEditorPanel'; // Import the new component
 
 interface ThreeDViewerProps {
   modelPath: string | null;
 }
 
-const PathCreator = ({ modelRef }: { modelRef: React.RefObject<THREE.Group> }) => {
+const PathCreator = () => {
   const [points, setPoints] = useState<THREE.Vector3[]>([]);
   const [pathLength, setPathLength] = useState(0);
-  const { camera, size } = useThree();
   const {
     harnessId,
     edges,
@@ -24,6 +25,13 @@ const PathCreator = ({ modelRef }: { modelRef: React.RefObject<THREE.Group> }) =
     setManufacturingMargin,
   } = useHarnessStore();
 
+  const selectedEdge = useMemo(
+    () => edges.find((e) => e.id === selectedEdgeId),
+    [edges, selectedEdgeId]
+  );
+  const wireColor = selectedEdge?.data?.color || 'hotpink';
+  const totalLength = pathLength * manufacturingMargin;
+
   const calculateLength = useCallback((currentPoints: THREE.Vector3[]) => {
     let length = 0;
     for (let i = 0; i < currentPoints.length - 1; i++) {
@@ -32,26 +40,33 @@ const PathCreator = ({ modelRef }: { modelRef: React.RefObject<THREE.Group> }) =
     setPathLength(length);
   }, []);
 
+  useEffect(() => {
+    if (selectedEdge?.data?.path_3d) {
+      const existingPoints = selectedEdge.data.path_3d.map(
+        (p: { x: number; y: number; z: number }) =>
+          new THREE.Vector3(p.x, p.y, p.z)
+      );
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setPoints(existingPoints);
+      calculateLength(existingPoints);
+    } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setPoints([]);
+      setPathLength(0);
+    }
+  }, [selectedEdge, calculateLength]);
+
   const handleCanvasClick = useCallback(
-    (event: MouseEvent) => {
-      if (!modelRef.current) return;
+    (event: ThreeEvent<MouseEvent>) => {
+      if (!selectedEdgeId) return;
 
-      const raycaster = new THREE.Raycaster();
-      const mouse = new THREE.Vector2();
-      mouse.x = (event.clientX / size.width) * 2 - 1;
-      mouse.y = -(event.clientY / size.height) * 2 + 1;
+      event.stopPropagation();
 
-      raycaster.setFromCamera(mouse, camera);
-
-      const intersects = raycaster.intersectObjects(modelRef.current.children, true);
-
-      if (intersects.length > 0) {
-        const newPoints = [...points, intersects[0].point];
-        setPoints(newPoints);
-        calculateLength(newPoints);
-      }
+      const newPoints = [...points, event.point];
+      setPoints(newPoints);
+      calculateLength(newPoints);
     },
-    [points, camera, modelRef, size, calculateLength]
+    [points, calculateLength, selectedEdgeId]
   );
 
   const undo = useCallback(() => {
@@ -65,7 +80,7 @@ const PathCreator = ({ modelRef }: { modelRef: React.RefObject<THREE.Group> }) =
     setPathLength(0);
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.ctrlKey && event.key === 'z') {
         undo();
@@ -78,14 +93,13 @@ const PathCreator = ({ modelRef }: { modelRef: React.RefObject<THREE.Group> }) =
   }, [undo]);
 
   const savePath = async () => {
-    const edge = edges.find(e => e.id === selectedEdgeId);
-    if (edge) {
-      const path_3d = points.map(p => ({ x: p.x, y: p.y, z: p.z }));
-      updateEdgeData(edge.id, { path_3d });
+    if (selectedEdge) {
+      const path_3d = points.map((p) => ({ x: p.x, y: p.y, z: p.z }));
+      updateEdgeData(selectedEdge.id, { path_3d });
 
       try {
         const response = await axios.put(
-          `/api/v1/harnesses/${harnessId}/wires/${edge.data.wire_id}/3d-path`,
+          `/api/v1/harnesses/${harnessId}/wires/${selectedEdge.data.wire_id}/3d-path`,
           {
             points: path_3d,
           },
@@ -95,7 +109,7 @@ const PathCreator = ({ modelRef }: { modelRef: React.RefObject<THREE.Group> }) =
             },
           }
         );
-        updateWireLength(edge.id, response.data.length);
+        updateWireLength(selectedEdge.id, response.data.length);
       } catch (error) {
         console.error('Error saving 3D path:', error);
       }
@@ -105,64 +119,46 @@ const PathCreator = ({ modelRef }: { modelRef: React.RefObject<THREE.Group> }) =
   return (
     <>
       <mesh onClick={handleCanvasClick}>
-        <boxBufferGeometry args={[1000, 1000, 1000]} />
-        <meshStandardMaterial transparent opacity={0} />
+        <planeGeometry args={[1000, 1000]} />
+        <meshStandardMaterial
+          transparent
+          opacity={0}
+          side={THREE.DoubleSide}
+        />
       </mesh>
       {points.map((point, index) => (
         <mesh key={index} position={point}>
           <sphereGeometry args={[0.5, 16, 16]} />
-          <meshStandardMaterial color="hotpink" />
+          <meshStandardMaterial color={wireColor} />
         </mesh>
       ))}
-      {points.length > 1 && <Line points={points} color={wireColor} lineWidth={3} />}
-      <div
-        style={{
-          position: 'absolute',
-          top: '10px',
-          left: '10px',
-          background: 'rgba(255, 255, 255, 0.5)',
-          padding: '10px',
-          borderRadius: '5px',
-        }}
-      >
-        <button onClick={savePath} style={{ marginBottom: '5px' }}>
-          Save Path
-        </button>
-        <button onClick={undo} style={{ marginBottom: '5px', marginLeft: '5px' }}>
-          Undo
-        </button>
-        <button onClick={clearPath} style={{ marginBottom: '5px', marginLeft: '5px' }}>
-          Clear Path
-        </button>
-        <div>
-          <label>
-            Margin:
-            <input
-              type="number"
-              value={manufacturingMargin}
-              onChange={(e) => setManufacturingMargin(parseFloat(e.target.value))}
-              step="0.01"
-              min="1"
-              style={{ width: '60px', marginLeft: '5px' }}
-            />
-          </label>
-        </div>
-        <div style={{ marginTop: '5px' }}>Length: {pathLength.toFixed(2)} mm</div>
-      </div>
+      {points.length > 1 && (
+        <Line points={points} color={wireColor} lineWidth={3} />
+      )}
+
+      <PathEditorPanel
+        selectedEdgeId={selectedEdgeId}
+        wireColor={wireColor}
+        pathLength={pathLength}
+        totalLength={totalLength}
+        manufacturingMargin={manufacturingMargin}
+        setManufacturingMargin={setManufacturingMargin}
+        onSave={savePath}
+        onUndo={undo}
+        onClear={clearPath}
+      />
     </>
   );
 };
 
 const ThreeDViewer: React.FC<ThreeDViewerProps> = ({ modelPath }) => {
-  const modelRef = React.useRef<THREE.Group>(null);
-
   return (
     <Canvas style={{ background: '#f0f0f0' }}>
       <ambientLight intensity={0.5} />
       <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
       <pointLight position={[-10, -10, -10]} />
-      {modelPath && <Gltf src={modelPath} ref={modelRef} />}
-      <PathCreator modelRef={modelRef} />
+      {modelPath && <Gltf src={modelPath} />}
+      <PathCreator />
       <OrbitControls />
     </Canvas>
   );
