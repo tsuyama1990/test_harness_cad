@@ -38,7 +38,7 @@ const Sidebar: React.FC = () => {
           .map((component) => (
             <div
               key={component.id}
-              className="p-2 mb-2 border rounded cursor-grab bg-white shadow-sm hover:shadow-md transition-shadow"
+              className="cursor-grab bg-white border border-gray-200 rounded-md p-3 shadow-sm hover:shadow-md hover:border-blue-300 transition-all mb-2"
               onDragStart={(event) => onDragStart(event, component)}
               draggable
               data-testid={`component-${component.name}`}
