@@ -14,49 +14,34 @@ interface CustomConnectorNodeProps {
 }
 
 const CustomConnectorNode: React.FC<CustomConnectorNodeProps> = ({ data }) => {
-  const pinHeight = 20;
-  const totalHeight = data.pins.length * pinHeight + 40;
-
   return (
-    <div
-      style={{
-        border: '1px solid #777',
-        padding: '10px',
-        borderRadius: '5px',
-        background: 'white',
-        width: 150,
-        height: totalHeight,
-      }}
-    >
-      <div style={{ textAlign: 'center', fontWeight: 'bold' }}>{data.label}</div>
-      <div style={{ textAlign: 'center', fontSize: '10px', color: '#666' }}>
-        {data.part_number}
+    <div className="w-40 bg-white shadow-md rounded-md border border-gray-300 hover:ring-2 hover:ring-blue-400 transition-all">
+      <div className="px-3 py-2 bg-gray-100 border-b border-gray-300 rounded-t-md">
+        <div className="font-bold text-center text-gray-800">{data.label}</div>
+        <div className="text-xs text-center text-gray-500">
+          {data.part_number}
+        </div>
       </div>
-      <div style={{ marginTop: '10px' }}>
-        {data.pins.map((pin, index) => (
+      <div className="py-2">
+        {data.pins.map((pin) => (
           <div
             key={pin.id}
-            style={{
-              position: 'relative',
-              height: `${pinHeight}px`,
-              display: 'flex',
-              alignItems: 'center',
-            }}
+            className="flex items-center justify-between px-3 h-8 hover:bg-gray-50"
           >
-            <Handle
-              type="source"
-              position={Position.Right}
-              id={pin.id}
-              style={{ top: `${index * pinHeight + 25}px` }}
-              data-testid={`handle-source-${data.label}-${pin.id}`}
-            />
-            <span style={{ fontSize: '12px' }}>{pin.id}</span>
             <Handle
               type="target"
               position={Position.Left}
               id={pin.id}
-              style={{ top: `${index * pinHeight + 25}px` }}
+              className="!bg-gray-400"
               data-testid={`handle-target-${data.label}-${pin.id}`}
+            />
+            <span className="font-mono text-xs text-gray-500">{pin.id}</span>
+            <Handle
+              type="source"
+              position={Position.Right}
+              id={pin.id}
+              className="!bg-gray-400"
+              data-testid={`handle-source-${data.label}-${pin.id}`}
             />
           </div>
         ))}

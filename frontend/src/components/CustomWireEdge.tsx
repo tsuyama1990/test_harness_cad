@@ -52,13 +52,9 @@ const CustomWireEdge: React.FC<CustomWireEdgeProps> = ({
           style={{
             position: 'absolute',
             transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
-            fontSize: 10,
-            background: '#ffcc00',
-            padding: '2px',
-            borderRadius: '2px',
             pointerEvents: 'all',
           }}
-          className="nodrag nopan"
+          className="nodrag nopan bg-yellow-100 text-yellow-800 border border-yellow-300 text-[10px] font-mono px-1.5 py-0.5 rounded shadow-sm hover:scale-110 transition-transform cursor-pointer"
         >
           {data.wire_id}
         </div>
