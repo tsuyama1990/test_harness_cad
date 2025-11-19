@@ -1,5 +1,7 @@
 // frontend/src/components/ValidationReportPanel.tsx
 import React, { useState } from 'react';
+import Button from './ui/Button';
+import Panel from './ui/Panel';
 
 interface ValidationError {
   component_id: string;
@@ -9,10 +11,12 @@ interface ValidationError {
 }
 
 interface ValidationReportPanelProps {
-  harnessId: string; // Assuming we have the harness ID
+  harnessId: string;
 }
 
-const ValidationReportPanel: React.FC<ValidationReportPanelProps> = ({ harnessId }) => {
+const ValidationReportPanel: React.FC<ValidationReportPanelProps> = ({
+  harnessId,
+}) => {
   const [errors, setErrors] = useState<ValidationError[]>([]);
   const [isValidated, setIsValidated] = useState(false);
   const [isValidationSuccess, setIsValidationSuccess] = useState(false);
@@ -26,41 +30,51 @@ const ValidationReportPanel: React.FC<ValidationReportPanelProps> = ({ harnessId
       setIsValidationSuccess(data.length === 0);
     } catch (error) {
       console.error('Validation failed:', error);
-      // You might want to show a generic error message to the user
     }
   };
 
   const handleExport = () => {
-    // This will trigger the file download
     window.location.href = `/api/v1/harnesses/${harnessId}/procurement/export-csv`;
   };
 
   return (
-    <div className="validation-panel">
-      <h3>Design Validation</h3>
-      <button onClick={handleValidate}>Run Validation</button>
-      {isValidated && (
-        <>
-          {isValidationSuccess ? (
-            <div className="success-message">Validation successful!</div>
-          ) : (
-            <div className="error-list">
-              <h4>Validation Errors:</h4>
-              <ul>
-                {errors.map((error, index) => (
-                  <li key={index}>
-                    <strong>{error.error_type}:</strong> {error.message}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          <button onClick={handleExport} disabled={!isValidationSuccess}>
-            Export Procurement CSV
-          </button>
-        </>
-      )}
-    </div>
+    <Panel data-testid="validation-report-panel">
+      <div className="flex flex-col gap-4">
+        <h3 className="text-lg font-semibold">Design Validation</h3>
+        <Button onClick={handleValidate}>Run Validation</Button>
+        {isValidated && (
+          <div className="mt-4 flex flex-col gap-4">
+            {isValidationSuccess ? (
+              <div className="rounded-md bg-green-50 p-4 text-green-700">
+                <p className="font-semibold">Validation Successful!</p>
+                <p>No errors found in the harness design.</p>
+              </div>
+            ) : (
+              <div className="rounded-md bg-red-50 p-4">
+                <h4 className="mb-2 font-semibold text-red-800">
+                  Validation Errors:
+                </h4>
+                <ul className="list-disc space-y-1 pl-5 text-red-700">
+                  {errors.map((error, index) => (
+                    <li key={index}>
+                      <strong className="font-medium">{error.error_type}:</strong>{' '}
+                      {error.message} (ID: {error.component_id})
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            <Button
+              onClick={handleExport}
+              disabled={!isValidationSuccess}
+              variant="secondary"
+            >
+              Export Procurement CSV
+            </Button>
+          </div>
+        )}
+      </div>
+    </Panel>
   );
 };
 
