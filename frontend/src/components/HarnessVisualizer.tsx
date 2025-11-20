@@ -29,9 +29,14 @@ const FlowCanvas: React.FC<HarnessVisualizerProps> = ({ harnessId }) => {
 
   return (
     <div
-      style={{ width: '100%', height: '100%' }}
       ref={reactFlowWrapper}
       data-testid="rf-canvas-wrapper"
+      tabIndex={0}
+      className="w-full h-full outline-none focus:border-2 focus:border-blue-400"
+      onClick={() => {
+        reactFlowWrapper.current?.focus();
+      }}
+      autoFocus
     >
       <ReactFlow
         nodes={nodes}
@@ -44,6 +49,7 @@ const FlowCanvas: React.FC<HarnessVisualizerProps> = ({ harnessId }) => {
         onDragOver={onDragOver}
         onDrop={onDrop}
         fitView
+        deleteKeyCode={['Backspace', 'Delete']}
       >
         <Controls />
         <Background />
