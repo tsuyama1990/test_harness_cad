@@ -10,12 +10,12 @@ const Button: React.FC<ButtonProps> = ({
   children,
   ...props
 }) => {
-  const baseStyles = 'px-4 py-2 rounded-md font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2';
+  const baseStyles = 'px-4 py-2 font-pixel font-bold uppercase tracking-wide border-2 border-pixel-border shadow-pixel active:shadow-none active:translate-x-[4px] active:translate-y-[4px] transition-all focus:outline-none';
 
   const variantStyles = {
-    primary: 'bg-primary text-white hover:bg-blue-700 focus:ring-primary',
-    secondary: 'bg-gray-200 text-text-main hover:bg-gray-300 focus:ring-gray-400',
-    outline: 'border border-primary text-primary hover:bg-blue-50 focus:ring-primary',
+    primary: 'bg-primary text-white hover:bg-primary-dark',
+    secondary: 'bg-white text-black hover:bg-gray-100',
+    outline: 'bg-transparent text-primary hover:bg-blue-50',
   };
 
   return (
