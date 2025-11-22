@@ -35,8 +35,8 @@ const MainCanvas = () => {
   };
 
   return (
-    <div className="relative h-full w-full">
-      <div className="absolute top-4 left-4 z-10 flex items-center gap-2 rounded-lg border border-gray-300 bg-white p-3 shadow-xl backdrop-blur-sm">
+    <div className="relative h-full w-full bg-background">
+      <div className="absolute top-4 left-4 z-10 flex items-center gap-2 border-2 border-pixel-border bg-surface p-3 shadow-pixel">
         <Button
           onClick={() => setViewMode('2D')}
           variant={viewMode === '2D' ? 'primary' : 'secondary'}

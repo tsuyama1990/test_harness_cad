@@ -18,8 +18,8 @@ const AttributeEditorPanel: React.FC = () => {
     selectedNodes.length > 0
       ? selectedNodes[0]
       : selectedEdges.length > 0
-      ? selectedEdges[0]
-      : null;
+        ? selectedEdges[0]
+        : null;
 
   const FormField: React.FC<{ label: string; children: React.ReactNode }> = ({
     label,
@@ -157,8 +157,8 @@ const AttributeEditorPanel: React.FC = () => {
   };
 
   return (
-    <aside className="w-96 bg-surface p-4 border-l border-gray-200 overflow-y-auto">
-      <h3 className="text-xl font-bold mb-4">Attribute Editor</h3>
+    <aside className="w-96 bg-surface p-4 border-l-4 border-pixel-border overflow-y-auto">
+      <h3 className="text-xl font-pixel font-bold mb-4 text-white uppercase tracking-wider">Attribute Editor</h3>
       {selectedElement
         ? 'position' in selectedElement // Check if it's a Node
           ? renderNodeEditor(selectedElement)
